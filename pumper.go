@@ -34,12 +34,12 @@ func main() {
 		fmt.Println(" Error open db:", err.Error())
 	}
 
-	count, err := ReadStock(db)
+	stockStore, err := ReadStock(db)
 	if err != nil {
 		log.Fatal("Error reading Stock: ", err.Error())
 	}
 
-	fmt.Printf("Read %d row(s) successfully.\n", count)
+	fmt.Println(stockStore[0])
 
 	defer db.Close()
 

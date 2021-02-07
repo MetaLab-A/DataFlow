@@ -34,7 +34,9 @@ func main() {
 		fmt.Println(" Error open db:", err.Error())
 	}
 
-	stockStore, err := ReadStock(db)
+	datetime := time.Now().Format("2006-01-02")
+	datetime = "2021-02-06"
+	stockStore, err := ReadStock(db, datetime)
 	if err != nil {
 		log.Fatal("Error reading Stock: ", err.Error())
 	}

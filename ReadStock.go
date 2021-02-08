@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+// Stock data table from db
 type Stock struct {
 	id       string
 	name     string

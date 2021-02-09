@@ -12,6 +12,8 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+
+	"DataFlow/localsql"
 )
 
 var db *sql.DB
@@ -40,8 +42,8 @@ func main() {
 	}
 
 	datetime := time.Now().Format("2006-01-02")
-	// datetime = "2021-02-06"
-	stockStore, err := ReadStockSQL(db, datetime)
+	datetime = "2021-02-06"
+	stockStore, err := localsql.ReadStockSQL(db, datetime)
 	if err != nil {
 		log.Fatal("Error reading Stock: ", err.Error())
 	}
@@ -63,26 +65,23 @@ func main() {
 	}
 
 	addStocks(ctx, stockStore)
-	cloudDB := readStock(ctx)
+	// cloudDB := readStock(ctx)
 
-	for _, data := range cloudDB {
-		fmt.Println("CDB: ", data)
-	}
+	// for _, data := range cloudDB {
+	// 	stockID := data["id"].(string)
+	// 	// localData := stockStore[stockID]
+	// 	// stockPrices := data["price"]
+	// 	// stockCosts := data["cost"]
 
+	// 	// updateStock(ctx, stockID, "123", "321")
+	// }
 
 	fmt.Println("Runtime: ", time.Since(runStart))
 }
 
-func addStocks(ctx context.Context, stockData []Stock) {
-	for i := 0; i < len(stockData); i++ {
-		_, err = client.Collection("Stocks").Doc(stockData[i].id).Set(ctx, map[string]interface{}{
-			"id":       stockData[i].id,
-			"name":     stockData[i].name,
-			"groupID":  stockData[i].groupID,
-			"cost":     stockData[i].cost,
-			"price":    stockData[i].price,
-			"editDate": stockData[i].editDate,
-		})
+func addStocks(ctx context.Context, stockData map[string]localsql.Stock) {
+	for key, data := range stockData {
+		_, err = client.Collection("Stocks").Doc(key).Set(ctx, data)
 	}
 
 	if err != nil {
@@ -107,4 +106,24 @@ func readStock(ctx context.Context) []map[string]interface{} {
 	}
 
 	return store
+}
+
+func updateStock(ctx context.Context, stockID string, newPrice []string, newCost []string) {
+	_, err = client.Collection("Stocks").Doc(stockID).Update(ctx, []firestore.Update{
+		{
+			Path:  "price",
+			Value: newPrice,
+		},
+		{
+			Path:  "cost",
+			Value: newCost,
+		},
+	})
+
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
+	} else {
+		log.Printf("Stocks ID: %s Updated", stockID)
+	}
 }

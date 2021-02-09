@@ -1,4 +1,4 @@
-package main
+package localsql
 
 import (
 	"context"
@@ -8,24 +8,25 @@ import (
 
 // Stock data table from db
 type Stock struct {
-	id       string
-	name     string
-	groupID  string
-	cost     string
-	price    string
-	editDate string
+	ID       string
+	Name     string
+	GroupID  string
+	Cost     []string
+	Price    []string
+	EditDate string
 }
 
+
 // ReadStockSQL reads all Stock from bsItem records
-func ReadStockSQL(db *sql.DB, datetime string) ([]Stock, error) {
-	store := []Stock{}
+func ReadStockSQL(db *sql.DB, datetime string) (map[string]Stock, error) {
+	store := make(map[string]Stock)
 
 	ctx := context.Background()
 
 	// Check if database is alive.
 	err := db.PingContext(ctx)
 	if err != nil {
-		return []Stock{}, err
+		return store, err
 	}
 
 	// Get current date
@@ -35,7 +36,7 @@ func ReadStockSQL(db *sql.DB, datetime string) ([]Stock, error) {
 	// Execute query
 	rows, err := db.QueryContext(ctx, stockSQL)
 	if err != nil {
-		return []Stock{}, err
+		return store, err
 	}
 
 	// Close connection
@@ -46,18 +47,23 @@ func ReadStockSQL(db *sql.DB, datetime string) ([]Stock, error) {
 		var stockRow Stock
 
 		// Get values from row.
+		cost := ""
+		price := ""
 		err := rows.Scan(
-			&stockRow.id, &stockRow.name, &stockRow.groupID,
-			&stockRow.cost, &stockRow.price, &stockRow.editDate,
+			&stockRow.ID, &stockRow.Name, &stockRow.GroupID,
+			&cost, &price, &stockRow.EditDate,
 		)
 
 		if err != nil {
-			return []Stock{}, err
+			return store, err
 		}
 
-		store = append(store, stockRow)
+		stockRow.Cost = []string{cost}
+		stockRow.Price = []string{price}
+		store[stockRow.ID] = stockRow
+
 		fmt.Printf("ID: %s, Name: %s, GroupID: %s, Cost: %s, Price: %s, EditDate: %s\n",
-			stockRow.id, stockRow.name, stockRow.groupID, stockRow.cost, stockRow.price, stockRow.editDate)
+			stockRow.ID, stockRow.Name, stockRow.GroupID, stockRow.Cost, stockRow.Price, stockRow.EditDate)
 	}
 
 	return store, nil

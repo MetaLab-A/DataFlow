@@ -6,64 +6,64 @@ import (
 	"fmt"
 )
 
-// Stock data table from db
+// Stock DATA MODEL FROM  LOCAL DB
 type Stock struct {
 	ID       string
 	Name     string
 	GroupID  string
-	Cost     []string
-	Price    []string
+	Cost     string
+	Price    string
 	EditDate string
 }
 
 
-// ReadStockSQL reads all Stock from bsItem records
+// ReadStockSQL READS ALL sTOCK FROM BSiTEM RECORDS
 func ReadStockSQL(db *sql.DB, datetime string) (map[string]Stock, error) {
 	store := make(map[string]Stock)
 
 	ctx := context.Background()
 
-	// Check if database is alive.
+	// CHECK IF DATABASE IS ALIVE.
 	err := db.PingContext(ctx)
 	if err != nil {
 		return store, err
 	}
 
-	// Get current date
-	// Stock SQL statment
+	// GET CURRENT DATE
+	// USE gENESIS ONLY FIRST TIME
+	// stockSQLGenesis := fmt.Sprintf("SELECT ID, Name, GroupID, Cost, Price, EditDate FROM fss.dbo.bsItem WHERE GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;")
+
+	// STOCK sql STATMENT
 	stockSQL := fmt.Sprintf("SELECT ID, Name, GroupID, Cost, Price, EditDate FROM fss.dbo.bsItem WHERE EditDate >= '%s 00:00:00' AND GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;", datetime)
 
-	// Execute query
+	// ExECUTE QUERY
 	rows, err := db.QueryContext(ctx, stockSQL)
 	if err != nil {
 		return store, err
 	}
 
-	// Close connection
+	// CLOSE CONNECTIOn
 	defer rows.Close()
 
-	// Iterate through the result set.
+	// ITERATE THROUGH THE RESULT SET.
 	for rows.Next() {
 		var stockRow Stock
 
-		// Get values from row.
-		cost := ""
-		price := ""
+		// GET VALUES FROM ROW.
 		err := rows.Scan(
 			&stockRow.ID, &stockRow.Name, &stockRow.GroupID,
-			&cost, &price, &stockRow.EditDate,
+			&stockRow.Cost, &stockRow.Price, &stockRow.EditDate,
 		)
 
 		if err != nil {
 			return store, err
 		}
 
-		stockRow.Cost = []string{cost}
-		stockRow.Price = []string{price}
 		store[stockRow.ID] = stockRow
 
-		fmt.Printf("ID: %s, Name: %s, GroupID: %s, Cost: %s, Price: %s, EditDate: %s\n",
-			stockRow.ID, stockRow.Name, stockRow.GroupID, stockRow.Cost, stockRow.Price, stockRow.EditDate)
+		// IF YOU WANT TO SEE DATA STREAM FROM LOCAL DATABASE
+		// fmt.Printf("ID: %s, Name: %s, GroupID: %s, Cost: %s, Price: %s, EditDate: %s\n",
+		// 	stockRow.ID, stockRow.Name, stockRow.GroupID, stockRow.Cost, stockRow.Price, stockRow.EditDate)
 	}
 
 	return store, nil

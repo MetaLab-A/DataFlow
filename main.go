@@ -42,7 +42,7 @@ func main() {
 	}
 
 	datetime := time.Now().Format("2006-01-02")
-	datetime = "2021-02-06"
+	// datetime = "2021-02-06"
 	stockStore, err := localsql.ReadStockSQL(db, datetime)
 	if err != nil {
 		log.Fatal("Error reading Stock: ", err.Error())
@@ -50,7 +50,7 @@ func main() {
 
 	defer db.Close()
 
-	// Firebase: Firestore
+	// FIREBASE: fIRESTORE
 	sa := option.WithCredentialsFile("fasai-cloud-firebase-adminsdk-iu86z-5d3ce4573f.json")
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
@@ -64,24 +64,45 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	addStocks(ctx, stockStore)
-	// cloudDB := readStock(ctx)
+	// ADDING OR INIT DATA
+	// addStocks(ctx, stockStore)
 
-	// for _, data := range cloudDB {
-	// 	stockID := data["id"].(string)
-	// 	// localData := stockStore[stockID]
-	// 	// stockPrices := data["price"]
-	// 	// stockCosts := data["cost"]
+	cloudDB := readStock(ctx)
 
-	// 	// updateStock(ctx, stockID, "123", "321")
-	// }
+	for _, data := range cloudDB {
+		stockID := data["ID"].(string)
+		localData := stockStore[stockID]
+		stockPrices := data["Price"].([]interface{})
+		stockCosts := data["Cost"].([]interface{})
+		stockEditDate := data["EditDate"].([]interface{})
+
+		if localData.Price == "" {
+			lastIdx := len(stockPrices) - 1
+			localData.Price = stockPrices[lastIdx].(string)
+			localData.Cost = stockCosts[lastIdx].(string)
+			localData.EditDate = stockEditDate[lastIdx].(string)
+		}
+
+		stockPrices = append(stockPrices, localData.Price)
+		stockCosts = append(stockCosts, localData.Cost)
+		stockEditDate = append(stockEditDate, localData.EditDate)
+
+		updateStock(ctx, stockID, stockPrices, stockCosts, stockEditDate)
+	}
 
 	fmt.Println("Runtime: ", time.Since(runStart))
 }
 
 func addStocks(ctx context.Context, stockData map[string]localsql.Stock) {
 	for key, data := range stockData {
-		_, err = client.Collection("Stocks").Doc(key).Set(ctx, data)
+		_, err = client.Collection("Stocks").Doc(key).Set(ctx, map[string]interface{}{
+			"ID":       data.ID,
+			"Name":     data.Name,
+			"GroupID":  data.GroupID,
+			"Cost":     []string{data.Cost},
+			"Price":    []string{data.Price},
+			"EditDate": []string{data.EditDate},
+		})
 	}
 
 	if err != nil {
@@ -103,20 +124,25 @@ func readStock(ctx context.Context) []map[string]interface{} {
 		}
 
 		store = append(store, doc.Data())
+		fmt.Println(doc.Data())
 	}
 
 	return store
 }
 
-func updateStock(ctx context.Context, stockID string, newPrice []string, newCost []string) {
+func updateStock(ctx context.Context, stockID string, newPrice interface{}, newCost interface{}, newEditDate interface{}) {
 	_, err = client.Collection("Stocks").Doc(stockID).Update(ctx, []firestore.Update{
 		{
-			Path:  "price",
+			Path:  "Price",
 			Value: newPrice,
 		},
 		{
-			Path:  "cost",
+			Path:  "Cost",
 			Value: newCost,
+		},
+		{
+			Path:  "EditDate",
+			Value: newEditDate,
 		},
 	})
 

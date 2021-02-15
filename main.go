@@ -26,6 +26,7 @@ var client *firestore.Client
 func main() {
 	runStart := time.Now()
 
+// MSSQL Connections
 	connString := fmt.Sprintf("server=%s;user port=%d;database=%s;encrypt=disable", server, port, database)
 
 	db, err = sql.Open("mssql", connString)
@@ -43,14 +44,14 @@ func main() {
 
 	datetime := time.Now().Format("2006-01-02")
 	// datetime = "2021-02-06"
-	stockStore, err := localsql.ReadStockSQL(db, datetime)
+	stockStore, err := localsql.ReadStockSQL(db, datetime, false)
 	if err != nil {
 		log.Fatal("Error reading Stock: ", err.Error())
 	}
 
 	defer db.Close()
 
-	// FIREBASE: fIRESTORE
+// FIREBASE: fIRESTORE
 	sa := option.WithCredentialsFile("fasai-cloud-firebase-adminsdk-iu86z-5d3ce4573f.json")
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
@@ -68,26 +69,46 @@ func main() {
 	// addStocks(ctx, stockStore)
 
 	cloudDB := readStock(ctx)
+	updateStore := make(map[string]interface{})
 
-	for _, data := range cloudDB {
-		stockID := data["ID"].(string)
+	for _, cdata := range cloudDB {
+		stockID := cdata["ID"].(string)
+		stockPrices := cdata["Price"].([]interface{})
+		stockCosts := cdata["Cost"].([]interface{})
+		stockQties := cdata["StockQty"].([]interface{})
+		stockValues := cdata["StockValue"].([]interface{})
+		stockLastBuyDates := cdata["LastBuyDate"].([]interface{})
+		stockLastSellDates := cdata["LastSellDate"].([]interface{})
+		stockEditDates := cdata["EditDate"].([]interface{})
+
 		localData := stockStore[stockID]
-		stockPrices := data["Price"].([]interface{})
-		stockCosts := data["Cost"].([]interface{})
-		stockEditDate := data["EditDate"].([]interface{})
-
 		if localData.Price == "" {
 			lastIdx := len(stockPrices) - 1
 			localData.Price = stockPrices[lastIdx].(string)
 			localData.Cost = stockCosts[lastIdx].(string)
-			localData.EditDate = stockEditDate[lastIdx].(string)
+			localData.StockQty = stockQties[lastIdx].(string)
+			localData.StockValue = stockValues[lastIdx].(string)
+			localData.EditDate = stockEditDates[lastIdx].(string)
 		}
 
 		stockPrices = append(stockPrices, localData.Price)
 		stockCosts = append(stockCosts, localData.Cost)
-		stockEditDate = append(stockEditDate, localData.EditDate)
+		stockQties = append(stockQties, localData.StockQty)
+		stockValues = append(stockValues, localData.StockValue)
+		stockLastBuyDates = append(stockLastBuyDates, localData.LastBuyDate)
+		stockLastSellDates = append(stockLastSellDates, localData.LastSellDate)
+		stockEditDates = append(stockEditDates, localData.EditDate)
 
-		updateStock(ctx, stockID, stockPrices, stockCosts, stockEditDate)
+		updateStore["stockPrices"] = stockPrices
+		updateStore["stockCosts"] = stockCosts
+		updateStore["stockQties"] = stockQties
+		updateStore["stockValues"] = stockValues
+		updateStore["stockLastBuyDates"] = stockLastBuyDates
+		updateStore["stockLastSellDates"] = stockLastSellDates
+		updateStore["stockEditDates"] = stockEditDates
+
+
+		updateStock(ctx, stockID, updateStore)
 	}
 
 	fmt.Println("Runtime: ", time.Since(runStart))
@@ -101,6 +122,10 @@ func addStocks(ctx context.Context, stockData map[string]localsql.Stock) {
 			"GroupID":  data.GroupID,
 			"Cost":     []string{data.Cost},
 			"Price":    []string{data.Price},
+			"StockQty": []string{data.StockQty},
+			"StockValue": []string{data.StockValue},
+			"LastBuyDate": []sql.NullString{data.LastBuyDate},
+			"LastSellDate": []sql.NullString{data.LastSellDate},
 			"EditDate": []string{data.EditDate},
 		})
 	}
@@ -130,19 +155,35 @@ func readStock(ctx context.Context) []map[string]interface{} {
 	return store
 }
 
-func updateStock(ctx context.Context, stockID string, newPrice interface{}, newCost interface{}, newEditDate interface{}) {
+func updateStock(ctx context.Context, stockID string, store map[string]interface{}) {
 	_, err = client.Collection("Stocks").Doc(stockID).Update(ctx, []firestore.Update{
 		{
 			Path:  "Price",
-			Value: newPrice,
+			Value: store["stockPrices"],
 		},
 		{
 			Path:  "Cost",
-			Value: newCost,
+			Value: store["stockCosts"],
+		},		
+		{
+			Path:  "StockQty",
+			Value: store["stockQties"],
+		},		
+		{
+			Path:  "StockValue",
+			Value: store["stockValues"],
+		},		
+		{
+			Path:  "LastBuyDate",
+			Value: store["stockLastBuyDates"],
+		},
+		{
+			Path:  "LastSellDate",
+			Value: store["stockLastSellDates"],
 		},
 		{
 			Path:  "EditDate",
-			Value: newEditDate,
+			Value: store["stockEditDates"],
 		},
 	})
 

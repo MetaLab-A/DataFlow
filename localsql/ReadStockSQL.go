@@ -8,17 +8,20 @@ import (
 
 // Stock DATA MODEL FROM  LOCAL DB
 type Stock struct {
-	ID       string
-	Name     string
-	GroupID  string
-	Cost     string
-	Price    string
-	EditDate string
+	ID           string
+	Name         string
+	GroupID      string
+	Cost         string
+	Price        string
+	StockQty     string
+	StockValue   string
+	LastBuyDate  sql.NullString
+	LastSellDate sql.NullString
+	EditDate     string
 }
 
-
 // ReadStockSQL READS ALL sTOCK FROM BSiTEM RECORDS
-func ReadStockSQL(db *sql.DB, datetime string) (map[string]Stock, error) {
+func ReadStockSQL(db *sql.DB, datetime string, isGenesis bool) (map[string]Stock, error) {
 	store := make(map[string]Stock)
 
 	ctx := context.Background()
@@ -30,13 +33,17 @@ func ReadStockSQL(db *sql.DB, datetime string) (map[string]Stock, error) {
 	}
 
 	// GET CURRENT DATE
-	// USE gENESIS ONLY FIRST TIME
-	// stockSQLGenesis := fmt.Sprintf("SELECT ID, Name, GroupID, Cost, Price, EditDate FROM fss.dbo.bsItem WHERE GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;")
-
+	// USE GENESIS ONLY FIRST TIME
+	stockSQL := ""
+	if isGenesis {
+		stockSQL = fmt.Sprintf("SELECT ID, Name, GroupID, Cost, Price, StockQty, StockValue, LastBuyDate, LastsellDate, EditDate FROM fss.dbo.bsItem WHERE GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;")
+	} else {
 	// STOCK sql STATMENT
-	stockSQL := fmt.Sprintf("SELECT ID, Name, GroupID, Cost, Price, EditDate FROM fss.dbo.bsItem WHERE EditDate >= '%s 00:00:00' AND GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;", datetime)
-
-	// ExECUTE QUERY
+		stockSQL = fmt.Sprintf("SELECT ID, Name, GroupID, Cost, Price, StockQty, StockValue, LastBuyDate, LastsellDate, EditDate FROM fss.dbo.bsItem WHERE EditDate >= '%s 00:00:00' AND GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;", datetime)
+	}
+	
+	
+	// EXECUTE QUERY
 	rows, err := db.QueryContext(ctx, stockSQL)
 	if err != nil {
 		return store, err
@@ -52,7 +59,9 @@ func ReadStockSQL(db *sql.DB, datetime string) (map[string]Stock, error) {
 		// GET VALUES FROM ROW.
 		err := rows.Scan(
 			&stockRow.ID, &stockRow.Name, &stockRow.GroupID,
-			&stockRow.Cost, &stockRow.Price, &stockRow.EditDate,
+			&stockRow.Cost, &stockRow.Price, &stockRow.StockQty,
+			&stockRow.StockValue, &stockRow.LastBuyDate, &stockRow.LastSellDate,
+			&stockRow.EditDate,
 		)
 
 		if err != nil {

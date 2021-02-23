@@ -22,11 +22,11 @@ var database = "fss"
 var err error
 var client *firestore.Client
 
-// START MAIN
+// START: MAIN
 func main() {
 	runStart := time.Now()
 
-	// MSSQL Connections
+	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;user port=%d;database=%s;encrypt=disable", server, port, database)
 
 	db, err = sql.Open("mssql", connString)
@@ -52,8 +52,9 @@ func main() {
 	}
 
 	defer db.Close()
+	// END MSSQL: Connections
 
-	// FIREBASE: fIRESTORE
+	// START FIREBASE: fIRESTORE
 	sa := option.WithCredentialsFile("fasai-cloud-firebase-adminsdk-iu86z-5d3ce4573f.json")
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
@@ -66,15 +67,17 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	// END FIREBASE: fIRESTORE
 
+	// START: Stocks part
 	// ADDING OR INIT DATA
 	// addStocks(ctx, stockStore)
 
 	cloudDB := fsStocks.ReadStock(ctx, client)
-	fsStocks.PrepareAndUpdateStocks(ctx,client, cloudDB, stockStore)
+	fsStocks.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
+	// END: Stocks part
 
 	fmt.Println("Runtime: ", time.Since(runStart))
 }
 
-// END MAIN
-
+// END: MAIN

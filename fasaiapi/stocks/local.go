@@ -1,4 +1,4 @@
-package localsql
+package fasaiapi
 
 import (
 	"context"
@@ -20,8 +20,8 @@ type Stock struct {
 	EditDate     string
 }
 
-// ReadStockSQL READS ALL sTOCK FROM BSiTEM RECORDS
-func ReadStockSQL(db *sql.DB, datetime string, isGenesis bool) (map[string]Stock, error) {
+// ReadStockLocal READS ALL sTOCK FROM BSiTEM RECORDS
+func ReadStockLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]Stock, error) {
 	store := make(map[string]Stock)
 
 	ctx := context.Background()

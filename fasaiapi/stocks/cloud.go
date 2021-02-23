@@ -3,7 +3,6 @@ package fasaiapi
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 
 	"cloud.google.com/go/firestore"
@@ -49,7 +48,6 @@ func ReadStock(ctx context.Context, client *firestore.Client) []map[string]inter
 		}
 
 		store = append(store, doc.Data())
-		fmt.Println(doc.Data())
 	}
 
 	return store

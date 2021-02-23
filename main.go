@@ -27,7 +27,7 @@ func main() {
 	runStart := time.Now()
 
 	// START MSSQL: Connections
-	connString := fmt.Sprintf("server=%s;user port=%d;database=%s;encrypt=disable", server, port, database)
+	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
 
 	db, err = sql.Open("mssql", connString)
 	ctx := context.Background()
@@ -42,16 +42,18 @@ func main() {
 		fmt.Println(" Error open db:", err.Error())
 	}
 
-	datetime := time.Now().Format("2006-01-02")
 	// DATE format
 	// datetime = "2021-02-06"
+	datetime := time.Now().Format("2006-01-02")
 
 	stockStore, err := fsStocks.ReadStockLocal(db, datetime, false)
+
 	if err != nil {
 		log.Fatal("Error reading Stock: ", err.Error())
 	}
 
 	defer db.Close()
+
 	// END MSSQL: Connections
 
 	// START FIREBASE: fIRESTORE
@@ -74,7 +76,9 @@ func main() {
 	// addStocks(ctx, stockStore)
 
 	cloudDB := fsStocks.ReadStock(ctx, client)
-	fsStocks.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
+	_ = stockStore
+	_ = cloudDB
+	// fsStocks.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
 	// END: Stocks part
 
 	fmt.Println("Runtime: ", time.Since(runStart))

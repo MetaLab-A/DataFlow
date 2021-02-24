@@ -49,10 +49,7 @@ func main() {
 		log.Fatal("Error reading PO: ", err.Error())
 	}
 
-	fmt.Println(poLocal)
-
 	defer db.Close()
-
 	// END MSSQL: Connections
 
 	// START FIREBASE: fIRESTORE

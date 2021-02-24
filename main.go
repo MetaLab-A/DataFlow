@@ -76,9 +76,7 @@ func main() {
 	// addStocks(ctx, stockStore)
 
 	cloudDB := fsStocks.ReadStock(ctx, client)
-	_ = stockStore
-	_ = cloudDB
-	// fsStocks.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
+	fsStocks.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
 	// END: Stocks part
 
 	fmt.Println("Runtime: ", time.Since(runStart))

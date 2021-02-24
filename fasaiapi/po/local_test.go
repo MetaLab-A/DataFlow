@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"reflect"
 	"testing"
 	"time"
@@ -26,10 +25,6 @@ func TestReadPOLocal(t *testing.T) {
 	err = db.PingContext(ctx)
 	defer db.Close()
 
-
-	if err != nil {
-		log.Fatal(err.Error())
-	}
 	fmt.Printf("Connected DB from test\n")
 
 	if err != nil {

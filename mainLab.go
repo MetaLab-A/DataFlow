@@ -12,7 +12,7 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 	"google.golang.org/api/option"
 
-	fsStocks "DataFlow/fasaiapi/po"
+	fsPO "DataFlow/fasaiapi/po"
 )
 
 var db *sql.DB
@@ -65,6 +65,9 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	cloudDB := fsPO.ReadPO(ctx, client)
+	fsStocks.PrepareAndUpdatePO(ctx, client, cloudDB, stockStore)
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))

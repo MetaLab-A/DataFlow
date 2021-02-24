@@ -8,7 +8,6 @@ import (
 
 // PO type structure data model from local database
 type PO struct {
-	name         string
 	DocNo        string
 	DocDate      string
 	RefNo        string
@@ -19,26 +18,21 @@ type PO struct {
 	ApID         string
 	ApName       string
 	Credit       string
-	DueDate      string
-	CompleteDate string
-	PayType      string
 	TotalAmt     string
-	DiscountText string
 	DiscountAmt  string
 	BefoeTaxAmt  string
 	NetAmt       string
-	RemainAmt    string
-	Description  string
-	CreateBy     string
+	DueDate      string
+	CompleteDate string
 	CreateDate   string
-	CancelBy     string
 	CancelDate   string
 	EditDate     string
 }
 
 // ReadPOLocal get po data from local database
 func ReadPOLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]PO, error) {
-	statementPO := fmt.Sprintf("SELECT * FROM fss.dbo.bsPR WHERE DocDate >= '%[1]s 00:00:00' AND DocDate <= '%[1]s 20:00:00' ORDER BY DocDate DESC", datetime)
+	fields := fmt.Sprint("DocNo, DocDate, RefNo, RefDate, PoNo, Status, TaxType, ApID, ApName, Credit, TotalAmt, DiscountAmt, BefoeTaxAmt, NetAmt, DueDate, CompleteDate, CreateDate, CancelDate, EditDate")
+	statementPO := fmt.Sprintf("SELECT %[1]s FROM fss.dbo.bsPR WHERE DocDate >= '%[2]s 00:00:00' AND DocDate <= '%[2]s 20:00:00' ORDER BY DocDate DESC", fields, datetime)
 
 	store := make(map[string]PO)
 	ctx := context.Background()
@@ -49,7 +43,7 @@ func ReadPOLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]PO, er
 		return store, err
 	}
 
-		// EXECUTE QUERY
+	// EXECUTE QUERY
 	rows, err := db.QueryContext(ctx, statementPO)
 	if err != nil {
 		return store, err
@@ -63,8 +57,35 @@ func ReadPOLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]PO, er
 		var poRow PO
 
 		err := rows.Scan(
-			
+			&poRow.DocNo,
+			&poRow.DocDate,
+			&poRow.RefNo,
+			&poRow.RefDate,
+			&poRow.PoNo,
+			&poRow.Status,
+			&poRow.TaxType,
+			&poRow.ApID,
+			&poRow.ApName,
+			&poRow.Credit,
+			&poRow.TotalAmt,
+			&poRow.DiscountAmt,
+			&poRow.BefoeTaxAmt,
+			&poRow.NetAmt,
+			&poRow.DueDate,
+			&poRow.CompleteDate,
+			&poRow.CreateDate,
+			&poRow.CancelDate,
+			&poRow.EditDate,
 		)
+
+		if err != nil {
+			return store, err
+		}
+
+		store[poRow.DocNo] = poRow
+		
+		// IF YOU WANT TO SEE DATA STREAM FROM LOCAL DATABASE
+		fmt.Printf("DocNo: %s, PoNo: %s, NetAmt: %s\n", poRow.DocNo, poRow.PoNo, poRow.NetAmt)
 	}
 
 	return map[string]PO{}, nil

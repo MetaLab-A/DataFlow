@@ -23,16 +23,16 @@ type PO struct {
 	BefoeTaxAmt  string
 	NetAmt       string
 	DueDate      string
-	CompleteDate string
+	CompleteDate sql.NullString
 	CreateDate   string
-	CancelDate   string
-	EditDate     string
+	CancelDate   sql.NullString
+	EditDate     sql.NullString
 }
 
 // ReadPOLocal get po data from local database
 func ReadPOLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]PO, error) {
 	fields := fmt.Sprint("DocNo, DocDate, RefNo, RefDate, PoNo, Status, TaxType, ApID, ApName, Credit, TotalAmt, DiscountAmt, BefoeTaxAmt, NetAmt, DueDate, CompleteDate, CreateDate, CancelDate, EditDate")
-	statementPO := fmt.Sprintf("SELECT %[1]s FROM fss.dbo.bsPR WHERE DocDate >= '%[2]s 00:00:00' AND DocDate <= '%[2]s 20:00:00' ORDER BY DocDate DESC", fields, datetime)
+	statementPO := fmt.Sprintf("SELECT %[1]s FROM fss.dbo.bsPO WHERE DocDate >= '%[2]s 00:00:00' AND EditDate <= '%[2]s 20:00:00' ORDER BY EditDate DESC", fields, datetime)
 
 	store := make(map[string]PO)
 	ctx := context.Background()
@@ -83,7 +83,7 @@ func ReadPOLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]PO, er
 		}
 
 		store[poRow.DocNo] = poRow
-		
+
 		// IF YOU WANT TO SEE DATA STREAM FROM LOCAL DATABASE
 		fmt.Printf("DocNo: %s, PoNo: %s, NetAmt: %s\n", poRow.DocNo, poRow.PoNo, poRow.NetAmt)
 	}

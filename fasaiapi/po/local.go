@@ -9,9 +9,9 @@ import (
 // PO type structure data model from local database
 type PO struct {
 	DocNo        string
-	DocDate      string
+	DocDate      sql.NullString
 	RefNo        string
-	RefDate      string
+	RefDate      sql.NullString
 	PoNo         string
 	Status       string
 	TaxType      string
@@ -24,7 +24,7 @@ type PO struct {
 	NetAmt       string
 	DueDate      string
 	CompleteDate sql.NullString
-	CreateDate   string
+	CreateDate   sql.NullString
 	CancelDate   sql.NullString
 	EditDate     sql.NullString
 }
@@ -32,7 +32,17 @@ type PO struct {
 // ReadPOLocal get po data from local database
 func ReadPOLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]PO, error) {
 	fields := fmt.Sprint("DocNo, DocDate, RefNo, RefDate, PoNo, Status, TaxType, ApID, ApName, Credit, TotalAmt, DiscountAmt, BefoeTaxAmt, NetAmt, DueDate, CompleteDate, CreateDate, CancelDate, EditDate")
-	statementPO := fmt.Sprintf("SELECT %[1]s FROM fss.dbo.bsPO WHERE DocDate >= '%[2]s 00:00:00' AND EditDate <= '%[2]s 20:00:00' ORDER BY EditDate DESC", fields, datetime)
+
+	poSQL := ""
+
+	startDate := "2021-01-01"
+	endDate := datetime
+
+	if isGenesis {
+		poSQL = fmt.Sprintf("SELECT %[1]s FROM fss.dbo.bsPO WHERE EditDate >= '%[2]s 00:00:00' AND EditDate <= '%[3]s 20:00:00' ORDER BY EditDate DESC", fields, startDate, endDate)
+	} else {
+		poSQL = fmt.Sprintf("SELECT %[1]s FROM fss.dbo.bsPO WHERE EditDate >= '%[2]s 00:00:00' AND EditDate <= '%[2]s 20:00:00' ORDER BY EditDate DESC", fields, datetime)
+	}
 
 	store := make(map[string]PO)
 	ctx := context.Background()
@@ -44,7 +54,7 @@ func ReadPOLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]PO, er
 	}
 
 	// EXECUTE QUERY
-	rows, err := db.QueryContext(ctx, statementPO)
+	rows, err := db.QueryContext(ctx, poSQL)
 	if err != nil {
 		return store, err
 	}
@@ -88,5 +98,5 @@ func ReadPOLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]PO, er
 		fmt.Printf("DocNo: %s, PoNo: %s, NetAmt: %s\n", poRow.DocNo, poRow.PoNo, poRow.NetAmt)
 	}
 
-	return map[string]PO{}, nil
+	return store, nil
 }

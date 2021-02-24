@@ -12,7 +12,7 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 	"google.golang.org/api/option"
 
-	fsPO "DataFlow/fasaiapi/po"
+	fsapi "DataFlow/fasaiapi/po"
 )
 
 var db *sql.DB
@@ -43,7 +43,7 @@ func main() {
 	// datetime = "2021-02-06"
 	datetime := time.Now().Format("2006-01-02")
 
-	poLocal, err := fsStocks.ReadPOLocal(db, datetime, false)
+	poLocal, err := fsapi.ReadPOLocal(db, datetime, false)
 
 	if err != nil {
 		log.Fatal("Error reading PO: ", err.Error())
@@ -66,10 +66,10 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	cloudDB := fsPO.ReadPO(ctx, client)
-	fsStocks.PrepareAndUpdatePO(ctx, client, cloudDB, stockStore)
+	fsapi.AddPO(ctx, client, poLocal)
 	// END FIREBASE: fIRESTORE
 
+	fmt.Println("Data size:", len(poLocal))
 	fmt.Println("Runtime: ", time.Since(runStart))
 }
 

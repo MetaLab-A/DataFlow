@@ -2,20 +2,19 @@ package fasaiapi
 
 import (
 	"context"
-	"database/sql"
 	"log"
 
 	"cloud.google.com/go/firestore"
-	"google.golang.org/api/iterator"
 )
 
-var err error
 
 // AddPO Add new PO data to cloud in case that database doesn't not exist.
 func AddPO(ctx context.Context, client *firestore.Client, poData map[string]PO) {
+	var err error
+
 	for key, data := range poData {
-		_, err = client.Collection("Stocks").Doc(key).Set(ctx, map[string]interface{}{
-			"DocNo":      data.DocNo,
+		_, err = client.Collection("PO").Doc(key).Set(ctx, map[string]interface{}{
+			"DocNo":        data.DocNo,
 			"DocDate":      data.DocDate,
 			"RefNo":        data.RefNo,
 			"RefDate":      data.RefDate,
@@ -38,6 +37,8 @@ func AddPO(ctx context.Context, client *firestore.Client, poData map[string]PO) 
 	}
 
 	if err != nil {
-		log.Fatalf("Failed adding Stock type: %v", err)
+		log.Fatalf("Failed adding PO type: %v", err)
 	}
+
+	log.Println("Added PO data to Firebase")
 }

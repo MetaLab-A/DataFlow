@@ -110,13 +110,14 @@ func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloud
 
 		localData := localDB[stockID]
 		if localData.Price == "" {
-			lastIdx := len(stockPrices) - 1
-			localData.Price = stockPrices[lastIdx].(string)
-			localData.Cost = stockCosts[lastIdx].(string)
-			localData.StockQty = stockQties[lastIdx].(string)
-			localData.StockValue = stockValues[lastIdx].(string)
-			localData.EditDate = stockEditDates[lastIdx].(string)
+			continue
 		}
+			// lastIdx := len(stockPrices) - 1
+			// localData.Price = stockPrices[lastIdx].(string)
+			// localData.Cost = stockCosts[lastIdx].(string)
+			// localData.StockQty = stockQties[lastIdx].(string)
+			// localData.StockValue = stockValues[lastIdx].(string)
+			// localData.EditDate = stockEditDates[lastIdx].(string)
 
 		stockPrices = append(stockPrices, localData.Price)
 		stockCosts = append(stockCosts, localData.Cost)

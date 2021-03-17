@@ -25,6 +25,8 @@ var client *firestore.Client
 // START: MAIN
 func main() {
 	runStart := time.Now()
+	
+	curTime = runStart.Format("15:04:05")
 
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)

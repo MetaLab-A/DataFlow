@@ -7,12 +7,13 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
+	models "DataFlow/models"
 )
 
 var err error
 
 // AddStocks Add new stock data to cloud in case that database doesn't not exist.
-func AddStocks(ctx context.Context, client *firestore.Client, stockData map[string]Stock) {
+func AddStocks(ctx context.Context, client *firestore.Client, stockData map[string]models.Stock) {
 	for key, data := range stockData {
 		_, err = client.Collection("Stocks").Doc(key).Set(ctx, map[string]interface{}{
 			"ID":           data.ID,
@@ -95,7 +96,7 @@ func UpdateStock(ctx context.Context, client *firestore.Client, stockID string, 
 }
 
 // PrepareAndUpdateStocks to adjust data format and upload to cloud
-func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloudDB []map[string]interface{}, localDB map[string]Stock) {
+func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloudDB []map[string]interface{}, localDB map[string]models.Stock) {
 	updateStore := make(map[string]interface{})
 
 	for _, cdata := range cloudDB {

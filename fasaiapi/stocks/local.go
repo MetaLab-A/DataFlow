@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	models "../models/stock.go"
+	models "DataFlow/models"
 )
 
 // ReadStockLocal READS ALL sTOCK FROM BSiTEM RECORDS
-func ReadStockLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]Stock, error) {
-	store := make(map[string]Stock)
+func ReadStockLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]models.Stock, error) {
+	store := make(map[string]models.Stock)
 
 	ctx := context.Background()
 

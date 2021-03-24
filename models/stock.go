@@ -1,5 +1,7 @@
 package models
 
+import "database/sql"
+
 type Stock struct {
 	ID           string
 	Name         string

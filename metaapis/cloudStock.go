@@ -25,7 +25,7 @@ func AddCloudStocks(ctx context.Context, client *firestore.Client, stockData map
 			"StockValue":   []string{data.StockValue},
 			"LastBuyDate":  []sql.NullString{data.LastBuyDate},
 			"LastSellDate": []sql.NullString{data.LastSellDate},
-			"EditDate":     []string{data.EditDate},
+			"EditDate":     []sql.NullString{data.EditDate},
 		})
 	}
 

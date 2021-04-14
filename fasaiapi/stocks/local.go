@@ -4,25 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	models "DataFlow/models"
 )
 
-// Stock DATA MODEL FROM  LOCAL DB
-type Stock struct {
-	ID           string
-	Name         string
-	GroupID      string
-	Cost         string
-	Price        string
-	StockQty     string
-	StockValue   string
-	LastBuyDate  sql.NullString
-	LastSellDate sql.NullString
-	EditDate     string
-}
-
 // ReadStockLocal READS ALL sTOCK FROM BSiTEM RECORDS
-func ReadStockLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]Stock, error) {
-	store := make(map[string]Stock)
+func ReadStockLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]models.Stock, error) {
+	store := make(map[string]models.Stock)
 
 	ctx := context.Background()
 
@@ -54,7 +41,7 @@ func ReadStockLocal(db *sql.DB, datetime string, isGenesis bool) (map[string]Sto
 
 	// ITERATE THROUGH THE RESULT SET.
 	for rows.Next() {
-		var stockRow Stock
+		var stockRow models.Stock
 
 		// GET VALUES FROM ROW.
 		err := rows.Scan(

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -12,10 +11,12 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 	"google.golang.org/api/option"
 
-	fsStocks "DataFlow/fasaiapi/stocks"
+	metaapis "DataFlow/metaapis"
+
+	sqlx "github.com/jmoiron/sqlx"
 )
 
-var db *sql.DB
+var db *sqlx.DB
 var server = "(local)"
 var port = 1433
 var database = "fss"
@@ -25,13 +26,13 @@ var client *firestore.Client
 // START: MAIN
 func main() {
 	runStart := time.Now()
-	
+
 	// curTime = runStart.Format("15:04")
 
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
 
-	db, err = sql.Open("mssql", connString)
+	db, err = sqlx.Open("mssql", connString)
 	ctx := context.Background()
 	err = db.PingContext(ctx)
 
@@ -45,13 +46,14 @@ func main() {
 	}
 
 	// DATE format
-	// datetime = "2021-02-06"
 	datetime := time.Now().Format("2006-01-02")
+	// DEBUG: datetime = "2021-04-01"
+	statementSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrder WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
-	stockStore, err := fsStocks.ReadStockLocal(db, datetime, false)
+	store, err := metaapis.ReadSOData(db, statementSQL)
 
 	if err != nil {
-		log.Fatal("Error reading Stock: ", err.Error())
+		log.Fatal("Error reading SO: ", err.Error())
 	}
 
 	defer db.Close()
@@ -73,13 +75,17 @@ func main() {
 	}
 	// END FIREBASE: fIRESTORE
 
-	// START: Stocks part
 	// ADDING OR INIT DATA
-	// addStocks(ctx, stockStore)
+	cloudDB := metaapis.ReadCloudSO(ctx, client)
 
-	cloudDB := fsStocks.ReadStock(ctx, client)
-	fsStocks.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
-	// END: Stocks part
+	if len(cloudDB) == 0 {
+		fmt.Println("Meta-BI: Cloud is empty!. \nCreating Genesis block...")
+	} else {
+		fmt.Println("Meta-BI: Processing New SO...")
+	}
+
+	// Add SO to cloud
+	metaapis.AddCloudSO(ctx, client, store)
 
 	fmt.Println("Runtime: ", time.Since(runStart))
 }

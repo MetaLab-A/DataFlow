@@ -1,4 +1,4 @@
-package fasaiapi
+package metaapis
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 var err error
 
 // AddStocks Add new stock data to cloud in case that database doesn't not exist.
-func AddStocks(ctx context.Context, client *firestore.Client, stockData map[string]models.Stock) {
+func AddCloudStocks(ctx context.Context, client *firestore.Client, stockData map[string]models.Stock) {
 	for key, data := range stockData {
 		_, err = client.Collection("Stocks").Doc(key).Set(ctx, map[string]interface{}{
 			"ID":           data.ID,
@@ -35,7 +35,7 @@ func AddStocks(ctx context.Context, client *firestore.Client, stockData map[stri
 }
 
 // ReadStock get data from cloud
-func ReadStock(ctx context.Context, client *firestore.Client) []map[string]interface{} {
+func ReadCloudStock(ctx context.Context, client *firestore.Client) []map[string]interface{} {
 	store := make([]map[string]interface{}, 0)
 	iter := client.Collection("Stocks").Documents(ctx)
 
@@ -55,7 +55,7 @@ func ReadStock(ctx context.Context, client *firestore.Client) []map[string]inter
 }
 
 // UpdateStock to modify cloud database
-func UpdateStock(ctx context.Context, client *firestore.Client, stockID string, store map[string]interface{}) {
+func UpdateCloudStock(ctx context.Context, client *firestore.Client, stockID string, store map[string]interface{}) {
 	_, err = client.Collection("Stocks").Doc(stockID).Update(ctx, []firestore.Update{
 		{
 			Path:  "Price",
@@ -96,8 +96,8 @@ func UpdateStock(ctx context.Context, client *firestore.Client, stockID string, 
 }
 
 // PrepareAndUpdateStocks to adjust data format and upload to cloud
-func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloudDB []map[string]interface{}, localDB map[string]models.Stock) {
-	updateStore := make(map[string]interface{})
+func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloudDB []map[string]interface{}, localDB map[string]models.Stock) map[string]interface{} {
+	updatedStore := make(map[string]interface{})
 
 	for _, cdata := range cloudDB {
 		stockID := cdata["ID"].(string)
@@ -122,14 +122,16 @@ func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloud
 		stockLastSellDates = append(stockLastSellDates, localData.LastSellDate)
 		stockEditDates = append(stockEditDates, localData.EditDate)
 
-		updateStore["stockPrices"] = stockPrices
-		updateStore["stockCosts"] = stockCosts
-		updateStore["stockQties"] = stockQties
-		updateStore["stockValues"] = stockValues
-		updateStore["stockLastBuyDates"] = stockLastBuyDates
-		updateStore["stockLastSellDates"] = stockLastSellDates
-		updateStore["stockEditDates"] = stockEditDates
+		updatedStore["stockPrices"] = stockPrices
+		updatedStore["stockCosts"] = stockCosts
+		updatedStore["stockQties"] = stockQties
+		updatedStore["stockValues"] = stockValues
+		updatedStore["stockLastBuyDates"] = stockLastBuyDates
+		updatedStore["stockLastSellDates"] = stockLastSellDates
+		updatedStore["stockEditDates"] = stockEditDates
 
-		UpdateStock(ctx, client, stockID, updateStore)
+		UpdateCloudStock(ctx, client, stockID, updatedStore)
 	}
+
+	return updatedStore
 }

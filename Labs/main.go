@@ -25,8 +25,6 @@ var client *firestore.Client
 // START: MAIN
 func main() {
 	runStart := time.Now()
-	
-	// curTime = runStart.Format("15:04")
 
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
@@ -45,18 +43,15 @@ func main() {
 	}
 
 	// DATE format
-	
 	// datetime := time.Now().Format("2006-01-02")
 	datetime := "2021-02-06"
 	stockSQL := fmt.Sprintf("SELECT ID, Name, GroupID, Cost, Price, StockQty, StockValue, LastBuyDate, LastsellDate, EditDate FROM fss.dbo.bsItem WHERE EditDate >= '%s 00:00:00' AND GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;", datetime)
-	stockStore, err := metaapis.ReadLocalData(db, stockSQL, "Stock")
+	stockStore, err := metaapis.ReadStockData(db, stockSQL)
 
 	if err != nil {
 		log.Fatal("Error reading Stock: ", err.Error())
 	}
-
 	defer db.Close()
-
 	// END MSSQL: Connections
 
 	// START FIREBASE: fIRESTORE
@@ -78,8 +73,8 @@ func main() {
 	// ADDING OR INIT DATA
 	// addStocks(ctx, stockStore)
 
-	// cloudDB := fsStocks.ReadStock(ctx, client)
-	// fsStocks.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
+	cloudDB := metaapis.ReadCloudStock(ctx, client)
+	metaapis.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
 	// END: Stocks part
 
 	fmt.Println(stockStore)

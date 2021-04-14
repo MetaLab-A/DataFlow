@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -48,8 +47,9 @@ func main() {
 	// DATE format
 	// datetime = "2021-02-06"
 	datetime := time.Now().Format("2006-01-02")
+	stockSQL := fmt.Sprintf("SELECT ID, Name, GroupID, Cost, Price, StockQty, StockValue, LastBuyDate, LastsellDate, EditDate FROM fss.dbo.bsItem WHERE EditDate >= '%s 00:00:00' AND GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;", datetime)
 
-	stockStore, err := metaapis.localDB(db, datetime, false)
+	stockStore, err := metaapis.ReadStockData(db, stockSQL)
 
 	if err != nil {
 		log.Fatal("Error reading Stock: ", err.Error())
@@ -78,8 +78,8 @@ func main() {
 	// ADDING OR INIT DATA
 	// addStocks(ctx, stockStore)
 
-	cloudDB := fsStocks.ReadStock(ctx, client)
-	fsStocks.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
+	cloudDB := metaapis.ReadCloudStock(ctx, client)
+	metaapis.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
 	// END: Stocks part
 
 	fmt.Println("Runtime: ", time.Since(runStart))

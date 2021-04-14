@@ -7,7 +7,6 @@ import (
 	models "DataFlow/models"
 
 	"cloud.google.com/go/firestore"
-	"google.golang.org/api/iterator"
 )
 
 // AddStocks Add new stock data to cloud in case that database doesn't not exist.
@@ -57,25 +56,4 @@ func AddCloudSO(ctx context.Context, client *firestore.Client, storeData map[str
 	if err != nil {
 		log.Fatalf("Failed adding SO type: %v", err)
 	}
-}
-
-// ReadStock get data from cloud
-func ReadCloudSO(ctx context.Context, client *firestore.Client) []map[string]interface{} {
-	store := make([]map[string]interface{}, 0)
-	iter := client.Collection("SO").Documents(ctx)
-
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatalf("Failed reading Stock type: %v", err)
-		}
-
-		store = append(store, doc.Data())
-		break
-	}
-
-	return store
 }

@@ -45,7 +45,7 @@ func main() {
 	// DATE format
 	// datetime := time.Now().Format("2006-01-02")
 	datetime := "2021-02-06"
-	stockSQL := fmt.Sprintf("SELECT ID, Name, GroupID, Cost, Price, StockQty, StockValue, LastBuyDate, LastsellDate, EditDate FROM fss.dbo.bsItem WHERE EditDate >= '%s 00:00:00' AND GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;", datetime)
+	stockSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsItem WHERE EditDate >= '%s 00:00:00' AND GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;", datetime)
 	stockStore, err := metaapis.ReadStockData(db, stockSQL)
 
 	if err != nil {

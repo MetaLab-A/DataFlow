@@ -47,7 +47,7 @@ func main() {
 
 	// DATE format
 	datetime := time.Now().Format("2006-01-02")
-	datetime = "2021-01-01"
+	// DEBUG: datetime = "2021-04-01"
 	statementSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrder WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
 	store, err := metaapis.ReadSOData(db, statementSQL)
@@ -55,9 +55,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Error reading SO: ", err.Error())
 	}
-
-	// TODO: debug
-	fmt.Println(store)
 
 	defer db.Close()
 
@@ -76,18 +73,19 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	// // END FIREBASE: fIRESTORE
+	// END FIREBASE: fIRESTORE
 
-	// // ADDING OR INIT DATA
-	// // addStocks(ctx, stockStore)
-
+	// ADDING OR INIT DATA
 	cloudDB := metaapis.ReadCloudSO(ctx, client)
 
 	if len(cloudDB) == 0 {
-		fmt.Println("Cloud is empty!. \nCreating Genesis block...")
-		metaapis.AddCloudSO(ctx, client, store)
+		fmt.Println("Meta-BI: Cloud is empty!. \nCreating Genesis block...")
+	} else {
+		fmt.Println("Meta-BI: Processing New SO...")
 	}
-	// metaapis.PrepareAndUpdateSO(ctx, client, cloudDB, store)
+
+	// Add SO to cloud
+	metaapis.AddCloudSO(ctx, client, store)
 
 	fmt.Println("Runtime: ", time.Since(runStart))
 }

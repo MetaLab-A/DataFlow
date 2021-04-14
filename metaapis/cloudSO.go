@@ -50,6 +50,8 @@ func AddCloudSO(ctx context.Context, client *firestore.Client, storeData map[str
 			"EditID":       data.EditDate,
 			"EditDate":     data.EditDate,
 		})
+
+		log.Println("Added", data.DocNo)
 	}
 
 	if err != nil {
@@ -72,89 +74,8 @@ func ReadCloudSO(ctx context.Context, client *firestore.Client) []map[string]int
 		}
 
 		store = append(store, doc.Data())
+		break
 	}
 
 	return store
-}
-
-// UpdateStock to modify cloud database
-func UpdateCloudSO(ctx context.Context, client *firestore.Client, stockID string, store map[string]interface{}) {
-	_, err = client.Collection("SO").Doc(stockID).Update(ctx, []firestore.Update{
-		{
-			Path:  "Price",
-			Value: store["stockPrices"],
-		},
-		{
-			Path:  "Cost",
-			Value: store["stockCosts"],
-		},
-		{
-			Path:  "StockQty",
-			Value: store["stockQties"],
-		},
-		{
-			Path:  "StockValue",
-			Value: store["stockValues"],
-		},
-		{
-			Path:  "LastBuyDate",
-			Value: store["stockLastBuyDates"],
-		},
-		{
-			Path:  "LastSellDate",
-			Value: store["stockLastSellDates"],
-		},
-		{
-			Path:  "EditDate",
-			Value: store["stockEditDates"],
-		},
-	})
-
-	if err != nil {
-		// Handle any errors in an appropriate way, such as returning them.
-		log.Printf("An error has occurred: %s", err)
-	} else {
-		log.Printf("Stocks ID: %s Updated", stockID)
-	}
-}
-
-// PrepareAndUpdateStocks to adjust data format and upload to cloud
-func PrepareAndUpdateSO(ctx context.Context, client *firestore.Client, cloudDB []map[string]interface{}, localDB map[string]models.Stock) map[string]interface{} {
-	updatedStore := make(map[string]interface{})
-
-	for _, cdata := range cloudDB {
-		stockID := cdata["ID"].(string)
-		stockPrices := cdata["Price"].([]interface{})
-		stockCosts := cdata["Cost"].([]interface{})
-		stockQties := cdata["StockQty"].([]interface{})
-		stockValues := cdata["StockValue"].([]interface{})
-		stockLastBuyDates := cdata["LastBuyDate"].([]interface{})
-		stockLastSellDates := cdata["LastSellDate"].([]interface{})
-		stockEditDates := cdata["EditDate"].([]interface{})
-
-		localData := localDB[stockID]
-		if localData.Price == "" {
-			continue
-		}
-
-		stockPrices = append(stockPrices, localData.Price)
-		stockCosts = append(stockCosts, localData.Cost)
-		stockQties = append(stockQties, localData.StockQty)
-		stockValues = append(stockValues, localData.StockValue)
-		stockLastBuyDates = append(stockLastBuyDates, localData.LastBuyDate)
-		stockLastSellDates = append(stockLastSellDates, localData.LastSellDate)
-		stockEditDates = append(stockEditDates, localData.EditDate)
-
-		updatedStore["stockPrices"] = stockPrices
-		updatedStore["stockCosts"] = stockCosts
-		updatedStore["stockQties"] = stockQties
-		updatedStore["stockValues"] = stockValues
-		updatedStore["stockLastBuyDates"] = stockLastBuyDates
-		updatedStore["stockLastSellDates"] = stockLastSellDates
-		updatedStore["stockEditDates"] = stockEditDates
-
-		UpdateCloudStock(ctx, client, stockID, updatedStore)
-	}
-
-	return updatedStore
 }

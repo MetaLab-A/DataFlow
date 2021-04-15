@@ -105,6 +105,11 @@ func UpdateCloudStock(ctx context.Context, client *firestore.Client, stockID str
 
 // PrepareAndUpdateStocks to adjust data format and upload to cloud
 func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloudDB []map[string]interface{}, localDB map[string]models.Stock) map[string]interface{} {
+	
+	if len(localDB) == 0 {
+		log.Println("Stock: Up-to-date.")
+		return nil
+	}
 	updatedStore := make(map[string]interface{})
 
 	for _, cdata := range cloudDB {
@@ -140,6 +145,8 @@ func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloud
 
 		UpdateCloudStock(ctx, client, stockID, updatedStore)
 	}
+	
+	log.Println("Completed Adding Stock to cloud.")
 
 	return updatedStore
 }

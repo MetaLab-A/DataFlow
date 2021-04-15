@@ -38,7 +38,7 @@ func main() {
 		log.Fatal(" Error open db:", err.Error())
 	}
 
-	fmt.Printf("Connected!\n")
+	log.Println("Database Connected")
 
 	// DATE format
 	datetime := time.Now().Format("2006-01-02")	

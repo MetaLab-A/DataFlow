@@ -39,7 +39,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	fmt.Printf("Connected!\n")
+	
+	log.Println("Database Connected")
 
 	if err != nil {
 		fmt.Println(" Error open db:", err.Error())

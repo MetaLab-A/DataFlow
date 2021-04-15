@@ -42,13 +42,19 @@ func main() {
 
 	// DATE format
 	datetime := time.Now().Format("2006-01-02")	
-	// datetime = "2021-04-10"
+	datetime = "2021-01-10"
 	poSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPO WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
+	poItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPOItem WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
-	poStore, err := metaapis.ReadPOData(db, poSQL)
+	poStore, poErr := metaapis.ReadPOData(db, poSQL)
+	poItemStore, poItemErr := metaapis.ReadPOItemData(db, poItemSQL)
 
-	if err != nil {
-		log.Fatal("Error reading PO: ", err.Error())
+	if poErr != nil {
+		log.Fatal("Error reading PO: ", poErr.Error())
+	}
+	
+	if poItemErr != nil {
+		log.Fatal("Error reading PO Item: ", poItemErr.Error())
 	}
 
 	defer db.Close()
@@ -68,10 +74,12 @@ func main() {
 		log.Fatalln(err)
 	}
 	// Genesis Checking
-	_, _ = metaapis.ReadCloud("SO", ctx, client, true)
+	_, _ = metaapis.ReadCloud("PO", ctx, client, true)
+	_, _ = metaapis.ReadCloud("POItem", ctx, client, true)
 
 	// Adding data to cloud
 	metaapis.AddCloudPO(ctx, client, poStore)
+	metaapis.AddCloudPOItem(ctx, client, poItemStore)
 
 	// END FIREBASE: fIRESTORE
 

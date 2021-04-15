@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -12,10 +11,12 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 	"google.golang.org/api/option"
 
-	fsapi "DataFlow/fasaiapi/po"
+	metaapis "DataFlow/metaapis"
+
+	sqlx "github.com/jmoiron/sqlx"
 )
 
-var db *sql.DB
+var db *sqlx.DB
 var server = "(local)"
 var port = 1433
 var database = "fss"
@@ -29,7 +30,7 @@ func main() {
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
 
-	db, err = sql.Open("mssql", connString)
+	db, err = sqlx.Open("mssql", connString)
 	ctx := context.Background()
 	err = db.PingContext(ctx)
 
@@ -40,10 +41,13 @@ func main() {
 	fmt.Printf("Connected!\n")
 
 	// DATE format
-	// datetime = "2021-02-06"
-	datetime := time.Now().Format("2006-01-02")
+	
+	datetime := time.Now().Format("2006-01-02")	
+	datetime = "2021-04-10"
+	poSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPO WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
-	poLocal, err := fsapi.ReadPOLocal(db, datetime, false)
+	poStore, err := metaapis.ReadPOData(db, poSQL)
+	fmt.Println(poStore)
 
 	if err != nil {
 		log.Fatal("Error reading PO: ", err.Error())
@@ -66,10 +70,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fsapi.AddPO(ctx, client, poLocal)
+	// metaapis.AddCloudPO(ctx, client, poStore)
 	// END FIREBASE: fIRESTORE
 
-	fmt.Println("Data size:", len(poLocal))
 	fmt.Println("Runtime: ", time.Since(runStart))
 }
 

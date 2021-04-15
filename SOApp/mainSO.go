@@ -39,7 +39,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	fmt.Printf("Connected!\n")
+	
+	log.Println("Database Connected")
 
 	if err != nil {
 		fmt.Println(" Error open db:", err.Error())
@@ -47,13 +48,19 @@ func main() {
 
 	// DATE format
 	datetime := time.Now().Format("2006-01-02")
-	// DEBUG: datetime = "2021-04-01"
-	statementSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrder WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
+	// DEBUG: datetime = "2021-01-01"
+	soSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrder WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
+	soItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrderItem WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
-	store, err := metaapis.ReadSOData(db, statementSQL)
+	soStore, errSo := metaapis.ReadSOData(db, soSQL)
+	soItemStore, errSoItem := metaapis.ReadSOItemData(db, soItemSQL)
 
-	if err != nil {
-		log.Fatal("Error reading SO: ", err.Error())
+	if errSo != nil {
+		log.Fatal("Error reading SO: ", errSo.Error())
+	}
+
+	if errSoItem != nil {
+		log.Fatal("Error reading SO Item: ", errSoItem.Error())
 	}
 
 	defer db.Close()
@@ -76,16 +83,12 @@ func main() {
 	// END FIREBASE: fIRESTORE
 
 	// ADDING OR INIT DATA
-	cloudDB := metaapis.ReadCloudSO(ctx, client)
-
-	if len(cloudDB) == 0 {
-		fmt.Println("Meta-BI: Cloud is empty!. \nCreating Genesis block...")
-	} else {
-		fmt.Println("Meta-BI: Processing New SO...")
-	}
+	_, _ = metaapis.ReadCloud("SO", ctx, client, true)
+	_, _ = metaapis.ReadCloud("SOItem", ctx, client, true)
 
 	// Add SO to cloud
-	metaapis.AddCloudSO(ctx, client, store)
+	metaapis.AddCloudSO(ctx, client, soStore)
+	metaapis.AddCloudSOItem(ctx, client, soItemStore)
 
 	fmt.Println("Runtime: ", time.Since(runStart))
 }

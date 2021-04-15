@@ -7,11 +7,15 @@ import (
 	models "DataFlow/models"
 
 	"cloud.google.com/go/firestore"
-	"google.golang.org/api/iterator"
 )
 
-// AddStocks Add new stock data to cloud in case that database doesn't not exist.
+// AddCloudSO Add new SO data to cloud in case that cloud database doesn't not exist.
 func AddCloudSO(ctx context.Context, client *firestore.Client, storeData map[string]models.SO) {
+	if len(storeData) == 0 {
+		log.Println("SO: Up-to-date.")
+		return
+	}
+
 	for key, data := range storeData {
 		_, err = client.Collection("SO").Doc(key).Set(ctx, map[string]interface{}{
 			"RowOrder":     data.RowOrder,
@@ -51,31 +55,60 @@ func AddCloudSO(ctx context.Context, client *firestore.Client, storeData map[str
 			"EditDate":     data.EditDate,
 		})
 
-		log.Println("Added", data.DocNo)
+		log.Println("SO :", data.DocNo, "Added")
 	}
 
 	if err != nil {
 		log.Fatalf("Failed adding SO type: %v", err)
 	}
+
+	log.Println("Completed Adding SO to cloud.")
 }
 
-// ReadStock get data from cloud
-func ReadCloudSO(ctx context.Context, client *firestore.Client) []map[string]interface{} {
-	store := make([]map[string]interface{}, 0)
-	iter := client.Collection("SO").Documents(ctx)
-
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatalf("Failed reading Stock type: %v", err)
-		}
-
-		store = append(store, doc.Data())
-		break
+// AddCloudSOItem Add new SO Item data to cloud in case that cloud database doesn't not exist.
+func AddCloudSOItem(ctx context.Context, client *firestore.Client, storeData map[string]models.SOItem) {
+		if len(storeData) == 0 {
+		log.Println("SO Item: Up-to-date.")
+		return
 	}
 
-	return store
+	for key, data := range storeData {
+		_, err = client.Collection("SOItem").Doc(key).Set(ctx, map[string]interface{}{
+			"RowOrder":     data.RowOrder,
+			"DocNo":        data.DocNo,
+			"SequenNo":     data.SequenNo,
+			"ItemID":       data.ItemID,
+			"ItemName":     data.ItemName,
+			"UnitID":       data.UnitID,
+			"StockID":      data.StockID,
+			"Price":        data.Price,
+			"Cost":         data.Cost,
+			"Qty":          data.Qty,
+			"RQty":         data.RQty,
+			"RID":          data.RID,
+			"RDate":        data.RDate,
+			"DlvDate":      data.DlvDate,
+			"CQty":         data.CQty,
+			"CID":          data.CID,
+			"CDate":        data.CDate,
+			"ApID":         data.ApID,
+			"TrackDate":    data.TrackDate,
+			"DiscountText": data.DiscountText,
+			"DiscountAmt":  data.DiscountAmt,
+			"TotalAmt":     data.TotalAmt,
+			"Description":  data.Description,
+			"AddID":        data.AddID,
+			"AddDate":      data.AddDate,
+			"EditID":       data.EditID,
+			"EditDate":     data.EditDate,
+		})
+
+		log.Println("SO Item:", data.DocNo, "Added")
+	}
+
+	if err != nil {
+		log.Fatalf("Failed adding SO Item type: %v", err)
+	}
+
+	log.Println("Completed Adding SO Item to cloud.")
 }

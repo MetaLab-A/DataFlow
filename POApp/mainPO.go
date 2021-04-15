@@ -12,6 +12,7 @@ import (
 	"google.golang.org/api/option"
 
 	metaapis "DataFlow/metaapis"
+
 	sqlx "github.com/jmoiron/sqlx"
 )
 
@@ -34,23 +35,28 @@ func main() {
 	err = db.PingContext(ctx)
 
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(" Error open db:", err.Error())
 	}
-	fmt.Printf("Connected!\n")
 
-	if err != nil {
-		fmt.Println(" Error open db:", err.Error())
-	}
+	log.Println("Database Connected")
 
 	// DATE format
-	// datetime := time.Now().Format("2006-01-02")
-	datetime := "2021-02-06"
-	stockSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsItem WHERE EditDate >= '%s 00:00:00' AND GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;", datetime)
-	stockStore, err := metaapis.ReadStockData(db, stockSQL)
+	datetime := time.Now().Format("2006-01-02")	
+	// datetime = "2021-01-10"
+	poSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPO WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
+	poItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPOItem WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
-	if err != nil {
-		log.Fatal("Error reading Stock: ", err.Error())
+	poStore, poErr := metaapis.ReadPOData(db, poSQL)
+	poItemStore, poItemErr := metaapis.ReadPOItemData(db, poItemSQL)
+
+	if poErr != nil {
+		log.Fatal("Error reading PO: ", poErr.Error())
 	}
+	
+	if poItemErr != nil {
+		log.Fatal("Error reading PO Item: ", poItemErr.Error())
+	}
+
 	defer db.Close()
 	// END MSSQL: Connections
 
@@ -67,17 +73,16 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	// Genesis Checking
+	_, _ = metaapis.ReadCloud("PO", ctx, client, true)
+	_, _ = metaapis.ReadCloud("POItem", ctx, client, true)
+
+	// Adding data to cloud
+	metaapis.AddCloudPO(ctx, client, poStore)
+	metaapis.AddCloudPOItem(ctx, client, poItemStore)
+
 	// END FIREBASE: fIRESTORE
 
-	// START: Stocks part
-	// ADDING OR INIT DATA
-	// addStocks(ctx, stockStore)
-
-	cloudDB := metaapis.ReadCloudStock(ctx, client)
-	metaapis.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
-	// END: Stocks part
-
-	fmt.Println(stockStore)
 	fmt.Println("Runtime: ", time.Since(runStart))
 }
 

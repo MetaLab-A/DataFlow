@@ -38,8 +38,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	fmt.Printf("Connected!\n")
 
+	log.Println("Database Connected")
+	
 	if err != nil {
 		fmt.Println(" Error open db:", err.Error())
 	}
@@ -78,8 +79,8 @@ func main() {
 	// ADDING OR INIT DATA
 	// addStocks(ctx, stockStore)
 
-	cloudDB := metaapis.ReadCloudStock(ctx, client)
-	metaapis.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
+	cloudDB, _ := metaapis.ReadCloud("Stocks", ctx, client, false)
+	_ = metaapis.PrepareAndUpdateStocks(ctx, client, cloudDB, stockStore)
 	// END: Stocks part
 
 	fmt.Println("Runtime: ", time.Since(runStart))

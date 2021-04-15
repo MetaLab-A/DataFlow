@@ -66,3 +66,93 @@ func ReadSOData(db *sqlx.DB, statementSQL string) (map[string]models.SO, error) 
 	}
 	return store, nil
 }
+
+func ReadSOItemData(db *sqlx.DB, statementSQL string) (map[string]models.SOItem, error) {
+	store := make(map[string]models.SOItem)
+	ctx := context.Background()
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err := db.Queryx(statementSQL)
+	if err != nil {
+		return store, err
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.SOItem
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.RowOrder] = model
+	}
+	return store, nil
+}
+
+func ReadPOData(db *sqlx.DB, statementSQL string) (map[string]models.PO, error) {
+	store := make(map[string]models.PO)
+	ctx := context.Background()
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err := db.Queryx(statementSQL)
+	if err != nil {
+		return store, err
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.PO
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.DocNo] = model
+	}
+	return store, nil
+}
+
+func ReadPOItemData(db *sqlx.DB, statementSQL string) (map[string]models.POItem, error) {
+	store := make(map[string]models.POItem)
+	ctx := context.Background()
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err := db.Queryx(statementSQL)
+	if err != nil {
+		return store, err
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.POItem
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.RowOrder] = model
+	}
+	return store, nil
+}

@@ -13,8 +13,14 @@ import (
 var err error
 
 // AddStocks Add new stock data to cloud in case that database doesn't not exist.
-func AddCloudStocks(ctx context.Context, client *firestore.Client, stockData map[string]models.Stock) {
-	for key, data := range stockData {
+func AddCloudStocks(ctx context.Context, client *firestore.Client, storeData map[string]models.Stock) {
+	if len(storeData) == 0 {
+		log.Println("Stock: Up-to-date.")
+		return
+	}
+
+	var err error
+	for key, data := range storeData {
 		_, err = client.Collection("Stocks").Doc(key).Set(ctx, map[string]interface{}{
 			"ID":           data.ID,
 			"Name":         data.Name,
@@ -32,6 +38,8 @@ func AddCloudStocks(ctx context.Context, client *firestore.Client, stockData map
 	if err != nil {
 		log.Fatalf("Failed adding Stock type: %v", err)
 	}
+
+	log.Println("Completed Adding Stock to cloud.")
 }
 
 // ReadStock get data from cloud
@@ -97,6 +105,11 @@ func UpdateCloudStock(ctx context.Context, client *firestore.Client, stockID str
 
 // PrepareAndUpdateStocks to adjust data format and upload to cloud
 func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloudDB []map[string]interface{}, localDB map[string]models.Stock) map[string]interface{} {
+	
+	if len(localDB) == 0 {
+		log.Println("Stock: Up-to-date.")
+		return nil
+	}
 	updatedStore := make(map[string]interface{})
 
 	for _, cdata := range cloudDB {
@@ -132,6 +145,8 @@ func PrepareAndUpdateStocks(ctx context.Context, client *firestore.Client, cloud
 
 		UpdateCloudStock(ctx, client, stockID, updatedStore)
 	}
+	
+	log.Println("Completed Adding Stock to cloud.")
 
 	return updatedStore
 }

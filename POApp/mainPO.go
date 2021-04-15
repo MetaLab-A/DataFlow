@@ -42,7 +42,7 @@ func main() {
 
 	// DATE format
 	datetime := time.Now().Format("2006-01-02")	
-	datetime = "2021-01-10"
+	// datetime = "2021-01-10"
 	poSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPO WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 	poItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPOItem WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 

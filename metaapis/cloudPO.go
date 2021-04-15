@@ -8,10 +8,14 @@ import (
 )
 
 // AddPO Add new PO data to cloud in case that database doesn't not exist.
-func AddCloudPO(ctx context.Context, client *firestore.Client, poData map[string]models.PO) {
+func AddCloudPO(ctx context.Context, client *firestore.Client, storeData map[string]models.PO) {
+	if len(storeData) == 0 {
+		log.Println("PO: Up-to-date.")
+		return
+	}
 	var err error
 
-	for key, data := range poData {
+	for key, data := range storeData {
 		_, err = client.Collection("PO").Doc(key).Set(ctx, map[string]interface{}{
 			"RowOrder": data.RowOrder,
 			"DocNo": data.DocNo,
@@ -58,6 +62,11 @@ func AddCloudPO(ctx context.Context, client *firestore.Client, poData map[string
 
 // AddCloudPOItem Add new PO Item data to cloud in case that cloud database doesn't not exist.
 func AddCloudPOItem(ctx context.Context, client *firestore.Client, storeData map[string]models.POItem) {
+	if len(storeData) == 0 {
+		log.Println("PO Item: Up-to-date.")
+		return
+	}
+
 	for key, data := range storeData {
 		_, err = client.Collection("POItem").Doc(key).Set(ctx, map[string]interface{}{
 			"RowOrder": data.RowOrder,
@@ -85,4 +94,6 @@ func AddCloudPOItem(ctx context.Context, client *firestore.Client, storeData map
 	if err != nil {
 		log.Fatalf("Failed adding PO Item type: %v", err)
 	}
+
+	log.Println("Completed Adding PO Item to cloud.")
 }

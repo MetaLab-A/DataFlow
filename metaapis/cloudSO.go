@@ -11,6 +11,11 @@ import (
 
 // AddCloudSO Add new SO data to cloud in case that cloud database doesn't not exist.
 func AddCloudSO(ctx context.Context, client *firestore.Client, storeData map[string]models.SO) {
+	if len(storeData) == 0 {
+		log.Println("SO: Up-to-date.")
+		return
+	}
+
 	for key, data := range storeData {
 		_, err = client.Collection("SO").Doc(key).Set(ctx, map[string]interface{}{
 			"RowOrder":     data.RowOrder,
@@ -56,10 +61,17 @@ func AddCloudSO(ctx context.Context, client *firestore.Client, storeData map[str
 	if err != nil {
 		log.Fatalf("Failed adding SO type: %v", err)
 	}
+
+	log.Println("Completed Adding SO to cloud.")
 }
 
 // AddCloudSOItem Add new SO Item data to cloud in case that cloud database doesn't not exist.
 func AddCloudSOItem(ctx context.Context, client *firestore.Client, storeData map[string]models.SOItem) {
+		if len(storeData) == 0 {
+		log.Println("SO Item: Up-to-date.")
+		return
+	}
+
 	for key, data := range storeData {
 		_, err = client.Collection("SOItem").Doc(key).Set(ctx, map[string]interface{}{
 			"RowOrder":     data.RowOrder,
@@ -97,4 +109,6 @@ func AddCloudSOItem(ctx context.Context, client *firestore.Client, storeData map
 	if err != nil {
 		log.Fatalf("Failed adding SO Item type: %v", err)
 	}
+
+	log.Println("Completed Adding SO Item to cloud.")
 }

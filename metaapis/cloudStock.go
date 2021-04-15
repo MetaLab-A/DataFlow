@@ -13,8 +13,14 @@ import (
 var err error
 
 // AddStocks Add new stock data to cloud in case that database doesn't not exist.
-func AddCloudStocks(ctx context.Context, client *firestore.Client, stockData map[string]models.Stock) {
-	for key, data := range stockData {
+func AddCloudStocks(ctx context.Context, client *firestore.Client, storeData map[string]models.Stock) {
+	if len(storeData) == 0 {
+		log.Println("Stock: Up-to-date.")
+		return
+	}
+
+	var err error
+	for key, data := range storeData {
 		_, err = client.Collection("Stocks").Doc(key).Set(ctx, map[string]interface{}{
 			"ID":           data.ID,
 			"Name":         data.Name,
@@ -32,6 +38,8 @@ func AddCloudStocks(ctx context.Context, client *firestore.Client, stockData map
 	if err != nil {
 		log.Fatalf("Failed adding Stock type: %v", err)
 	}
+
+	log.Println("Completed Adding Stock to cloud.")
 }
 
 // ReadStock get data from cloud

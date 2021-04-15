@@ -41,13 +41,11 @@ func main() {
 	fmt.Printf("Connected!\n")
 
 	// DATE format
-	
 	datetime := time.Now().Format("2006-01-02")	
-	datetime = "2021-04-10"
+	// datetime = "2021-04-10"
 	poSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPO WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
 	poStore, err := metaapis.ReadPOData(db, poSQL)
-	fmt.Println(poStore)
 
 	if err != nil {
 		log.Fatal("Error reading PO: ", err.Error())
@@ -69,8 +67,12 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	// Genesis Checking
+	_, _ = metaapis.ReadCloud("SO", ctx, client, true)
 
-	// metaapis.AddCloudPO(ctx, client, poStore)
+	// Adding data to cloud
+	metaapis.AddCloudPO(ctx, client, poStore)
+
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))

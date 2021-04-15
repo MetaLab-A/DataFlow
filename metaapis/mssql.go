@@ -92,7 +92,7 @@ func ReadSOItemData(db *sqlx.DB, statementSQL string) (map[string]models.SOItem,
 		if err != nil {
 			return store, err
 		}
-		store[model.DocNo] = model
+		store[model.RowOrder] = model
 	}
 	return store, nil
 }

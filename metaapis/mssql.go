@@ -156,3 +156,34 @@ func ReadPOItemData(db *sqlx.DB, statementSQL string) (map[string]models.POItem,
 	}
 	return store, nil
 }
+
+
+func ReadInvoiceItemData(db *sqlx.DB, statementSQL string) (map[string]models.InvoiceItem, error) {
+	store := make(map[string]models.InvoiceItem)
+	ctx := context.Background()
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err := db.Queryx(statementSQL)
+	if err != nil {
+		return store, err
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.InvoiceItem
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.RowOrder] = model
+	}
+	return store, nil
+}

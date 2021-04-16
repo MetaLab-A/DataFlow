@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -52,7 +52,7 @@ func main() {
 	datetime := time.Now().Format("2006-01-02")
 	// DEBUG:
 	datetime = "2021-04-01"
-	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
+	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s 00:00:00' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", datetime)
 
 	invItemStore, errSoItem := metaapis.ReadInvoiceItemData(db, invItemSQL)
 
@@ -62,7 +62,8 @@ func main() {
 
 	defer db.Close()
 
-	printInvItem(invItemStore)
+	rankingStore := calInvItem2RankingItem(invItemStore)
+	printRanking(rankingStore)
 
 	// END MSSQL: Connections
 
@@ -86,22 +87,50 @@ func main() {
 
 // END: MAIN
 
-func printInvItem(store map[string]models.InvoiceItem) {
-	repeatID := make(map[string]int)
-	counter := 0
+func calInvItem2RankingItem(store map[string]models.InvoiceItem) map[string]*models.RankingItem {
+	repeatedID := make(map[string]*models.RankingItem)
 
-	for i, s := range store {
-		if strings.Contains(s.DocNo, "VS") {
-			fmt.Printf("===== Index %s, %s =====\n", i, s.DocNo)
-			fmt.Println("Item ID:", s.ItemID)
-			fmt.Println("Price:", s.Price)
-			fmt.Println("Qty:", s.Qty)
+	for _, s := range store {
+		tempObj := repeatedID[s.ItemID]
+		fTotal, _ := strconv.ParseFloat(s.TotalAmt, 64)
+		fProfit, _ := strconv.ParseFloat(s.ProfitAmt, 64)
+		fQty, _ := strconv.Atoi(s.Qty)
+		fPrice, _ := strconv.ParseFloat(s.Price, 64)
+
+		// Create new data in map if it found first time
+		if tempObj == nil {
+			tempObj = &models.RankingItem{}
 		}
 
-		repeatID[s.ItemID] += 1
-		counter += 1
+		// High - Low decision making
+		tempObj.HighPrice = newHigh(fPrice, tempObj.HighPrice)
+		tempObj.LowPrice = newLow(fPrice, tempObj.HighPrice)
+
+		tempObj.TotalAmt += fTotal
+		tempObj.ProfitAmt += fProfit
+		tempObj.Qty += fQty
+		repeatedID[s.ItemID] = tempObj
 	}
 
-	fmt.Println(repeatID)
-	fmt.Println("Counter:", counter)
+	return repeatedID
+}
+
+func newHigh(incoming float64, record float64) float64 {
+	if record <= 0 || incoming > record {
+		return incoming
+	}
+	return record
+}
+
+func newLow(incoming float64, record float64) float64 {
+	if record <= 0 || incoming < record {
+		return incoming
+	}
+	return record
+}
+
+func printRanking(store map[string]*models.RankingItem) {
+	for k, v := range store {
+		fmt.Println(k, ":", v)
+	}
 }

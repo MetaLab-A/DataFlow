@@ -25,6 +25,11 @@ var client *firestore.Client
 
 // START: MAIN
 func main() {
+	processor("2021-04-01 00:00:00", "2021-04-01 18:00:00", "rankingTest-1")
+	processor("2021-04-02 00:00:00", "2021-04-04 00:00:00", "rankingTest-2")
+}
+
+func processor(from string, to string, collectionName string) {
 	runStart := time.Now()
 
 	// START MSSQL: Connections
@@ -45,15 +50,15 @@ func main() {
 	}
 
 	// DATE format
-	datetime := time.Now().Format("2006-01-02")
+	// datetime := time.Now().Format("2006-01-02")
 	// DEBUG:
-	datetime = "2021-01-01"
-	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s 00:00:00' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", datetime)
+	// datetime = "2021-01-01"
+	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", from, to)
 
 	invItemStore, errSoItem := metaapis.ReadInvoiceItemData(db, invItemSQL)
 
 	if errSoItem != nil {
-		log.Fatal("Error reading SO Item: ", errSoItem.Error())
+		log.Fatal("Error reading Ranking Item: ", errSoItem.Error())
 	}
 
 	defer db.Close()
@@ -77,7 +82,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	metaapis.AddCloudRankingItem(ctx, client, rankingStore, "RankingAnnual")
+	metaapis.AddCloudRankingItem(ctx, client, rankingStore, collectionName)
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))

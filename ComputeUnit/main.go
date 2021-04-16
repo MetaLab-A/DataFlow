@@ -96,6 +96,8 @@ func calInvItem2RankingItem(store map[string]models.InvoiceItem) map[string]*mod
 		fProfit, _ := strconv.ParseFloat(s.ProfitAmt, 64)
 		fQty, _ := strconv.Atoi(s.Qty)
 		fPrice, _ := strconv.ParseFloat(s.Price, 64)
+		fCost, _ := strconv.ParseFloat(s.Cost, 64)
+		fMargin, _ := strconv.ParseFloat(s.Margin, 64)
 
 		// Create new data in map if it found first time
 		if tempObj == nil {
@@ -104,7 +106,11 @@ func calInvItem2RankingItem(store map[string]models.InvoiceItem) map[string]*mod
 
 		// High - Low decision making
 		tempObj.HighPrice = newHigh(fPrice, tempObj.HighPrice)
-		tempObj.LowPrice = newLow(fPrice, tempObj.HighPrice)
+		tempObj.HighCost = newHigh(fCost, tempObj.HighCost)
+		tempObj.HighMargin = newHigh(fMargin, tempObj.HighMargin)
+		tempObj.LowPrice = newLow(fPrice, tempObj.LowPrice)
+		tempObj.LowCost= newLow(fCost, tempObj.LowCost)
+		tempObj.LowMargin = newLow(fMargin, tempObj.LowMargin)
 
 		tempObj.TotalAmt += fTotal
 		tempObj.ProfitAmt += fProfit
@@ -131,6 +137,12 @@ func newLow(incoming float64, record float64) float64 {
 
 func printRanking(store map[string]*models.RankingItem) {
 	for k, v := range store {
-		fmt.Println(k, ":", v)
+		fmt.Println("=====", k, "=====")
+		fmt.Println("Price(H, L)", v.HighPrice, v.LowPrice)
+		fmt.Println("Cost(H, L)", v.HighCost, v.LowCost)
+		fmt.Println("Margin(H, L)", v.HighMargin, v.LowMargin)
+		fmt.Println("TotalAmt:", v.TotalAmt)
+		fmt.Println("ProfitAmt:", v.ProfitAmt)
+		fmt.Println("Qty:", v.Qty)
 	}
 }

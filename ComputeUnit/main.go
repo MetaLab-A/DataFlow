@@ -27,8 +27,6 @@ var client *firestore.Client
 func main() {
 	runStart := time.Now()
 
-	// curTime = runStart.Format("15:04")
-
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
 
@@ -78,6 +76,8 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	metaapis.AddCloudRankingItem(ctx, client, rankingStore)
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))

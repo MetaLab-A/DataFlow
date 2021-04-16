@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -51,9 +52,9 @@ func main() {
 	datetime := time.Now().Format("2006-01-02")
 	// DEBUG:
 	datetime = "2021-04-01"
-	soItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrderItem WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
+	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
-	soItemStore, errSoItem := metaapis.ReadSOItemData(db, soItemSQL)
+	invItemStore, errSoItem := metaapis.ReadInvoiceItemData(db, invItemSQL)
 
 	if errSoItem != nil {
 		log.Fatal("Error reading SO Item: ", errSoItem.Error())
@@ -61,7 +62,7 @@ func main() {
 
 	defer db.Close()
 
-	printSOItem(soItemStore)
+	printInvItem(invItemStore)
 
 	// END MSSQL: Connections
 
@@ -85,11 +86,22 @@ func main() {
 
 // END: MAIN
 
-func printSOItem(store map[string]models.SOItem) {
+func printInvItem(store map[string]models.InvoiceItem) {
+	repeatID := make(map[string]int)
+	counter := 0
+
 	for i, s := range store {
-		fmt.Printf("===== Index %s, %s =====\n", i, s.DocNo)
-		fmt.Println("Item ID:", s.ItemID)
-		fmt.Println("Price:", s.Price)
-		fmt.Println("Qty:", s.Qty)
+		if strings.Contains(s.DocNo, "VS") {
+			fmt.Printf("===== Index %s, %s =====\n", i, s.DocNo)
+			fmt.Println("Item ID:", s.ItemID)
+			fmt.Println("Price:", s.Price)
+			fmt.Println("Qty:", s.Qty)
+		}
+
+		repeatID[s.ItemID] += 1
+		counter += 1
 	}
+
+	fmt.Println(repeatID)
+	fmt.Println("Counter:", counter)
 }

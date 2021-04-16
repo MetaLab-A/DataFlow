@@ -8,14 +8,14 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-func AddCloudRankingItem(ctx context.Context, client *firestore.Client, storeData map[string]*models.RankingItem) {
+func AddCloudRankingItem(ctx context.Context, client *firestore.Client, storeData map[string]*models.RankingItem, collection string) {
 	if len(storeData) == 0 {
 		log.Println("Ranking Item: Up-to-date.")
 		return
 	}
 
 	for key, data := range storeData {
-		_, err = client.Collection("RankingItem").Doc(key).Set(ctx, map[string]interface{}{
+		_, err = client.Collection(collection).Doc(key).Set(ctx, map[string]interface{}{
 			"ItemID":     data.ItemID,
 			"ItemName":   data.ItemName,
 			"HighPrice":  data.HighPrice,

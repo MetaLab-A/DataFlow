@@ -11,7 +11,7 @@ type InvoiceItem struct {
 	UnitID       string         `db:"UnitID"`
 	StockID      string         `db:"StockID"`
 	Price        string         `db:"Price"`
-	Cost         sql.NullString `db:"Cost"`
+	Cost         string         `db:"Cost"`
 	Qty          string         `db:"Qty"`
 	DiscountText string         `db:"DiscountText"`
 	DiscountAmt  string         `db:"DiscountAmt"`

@@ -20,7 +20,7 @@ func CalInvItem2RankingItem(store map[string]models.InvoiceItem) map[string]*mod
 
 		// Create new data in map if it found first time
 		if tempObj == nil {
-			tempObj = &models.RankingItem{}
+			tempObj = &models.RankingItem{ItemID: s.ItemID, ItemName: s.ItemName}
 		}
 
 		// High - Low decision making

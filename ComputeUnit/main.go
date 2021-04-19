@@ -27,8 +27,6 @@ var client *firestore.Client
 func main() {
 	curDatetime := time.Now().Format("2006-01-02")
 	processor("2021-01-01 00:00:00", curDatetime, "RankingAnnual")
-	processor("2021-04-01 00:00:00", "2021-04-01 18:00:00", "rankingTest-1")
-	processor("2021-04-02 00:00:00", "2021-04-04 00:00:00", "rankingTest-2")
 }
 // END: MAIN
 

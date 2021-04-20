@@ -58,10 +58,10 @@ func main() {
 
 	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", "2021-01-01 00:00:00", curDatetime)
 
-	invItemStore, errSoItem := metaapis.ReadInvoiceItemData(db, invItemSQL)
+	invItemStore, errInvItem := metaapis.ReadInvoiceItemData(db, invItemSQL)
 
-	if errSoItem != nil {
-		log.Fatal("Error reading Ranking Item: ", errSoItem.Error())
+	if errInvItem != nil {
+		log.Fatal("Error reading Ranking Item: ", errInvItem.Error())
 	}
 
 	defer db.Close()

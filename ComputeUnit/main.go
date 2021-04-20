@@ -62,9 +62,11 @@ func main() {
 	soItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrderItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'SO%%' ORDER BY EditDate DESC;", "2021-01-01 00:00:00", curDatetime)
 
 	// SQL Stock Items
+	stockSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsItem WHERE EditDate >= '%s'", "2021-01-01 00:00:00")
 
 	invItemStore, errInvItem := metaapis.ReadInvoiceItemData(db, invItemSQL)
 	soItemStore, errSOItem := metaapis.ReadSOItemData(db, soItemSQL)
+	stockStore, errStock := metaapis.ReadStockData(db, stockSQL)
 
 	if errInvItem != nil {
 		log.Fatal("Error reading Ranking Item: ", errInvItem.Error())
@@ -72,7 +74,11 @@ func main() {
 	
 	if errSOItem != nil {
 		log.Fatal("Error reading SO Item: ", errSOItem.Error())
-	}
+	}	
+	
+	if errStock != nil {
+		log.Fatal("Error reading SO Item: ", errStock.Error())
+	}	
 
 	defer db.Close()
 
@@ -81,6 +87,9 @@ func main() {
 
 	soRankingStore := metaapis.CalSOItem2RankingItem(soItemStore)
 	metaapis.CalPrintSORanking(soRankingStore)
+
+	stockRankingStore := metaapis.CalStockItem2RankingItem(stockStore)
+	metaapis.CalPrintStockRanking(stockRankingStore)
 
 	// END MSSQL: Connections
 
@@ -100,6 +109,7 @@ func main() {
 
 	metaapis.AddCloudRankingItem(ctx, client, rankingStore, "RankingAnnual")
 	metaapis.AddCloudRankingSOItem(ctx, client, soRankingStore, "SORankingAnnual")
+	metaapis.AddCloudRankingStockItem(ctx, client, stockRankingStore, "stockRankingAnnual")
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))

@@ -109,9 +109,12 @@ func main() {
 
 	metaapis.AddCloudRankingItem(ctx, client, rankingStore, "RankingAnnual")
 	metaapis.AddCloudRankingSOItem(ctx, client, soRankingStore, "SORankingAnnual")
-	metaapis.AddCloudRankingStockItem(ctx, client, stockRankingStore, "stockRankingAnnual")
+	metaapis.AddCloudRankingStockItem(ctx, client, stockRankingStore, "StockRankingAnnual")
+	metaapis.AddCloudRankingTimeStamp(ctx, client, "RankingUpdateTimeStamp")
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))
+	
+	time.Sleep(3 * time.Second)
 }
 

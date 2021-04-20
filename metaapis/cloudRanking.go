@@ -4,6 +4,7 @@ import (
 	models "DataFlow/models"
 	"context"
 	"log"
+	"time"
 
 	"cloud.google.com/go/firestore"
 )
@@ -88,4 +89,13 @@ func AddCloudRankingStockItem(ctx context.Context, client *firestore.Client, sto
 	}
 
 	log.Println("Completed Adding Stock Ranking Item to cloud.")
+}
+
+func AddCloudRankingTimeStamp(ctx context.Context, client *firestore.Client, collection string) {
+	updatedDatetime := time.Now().Format("2006-01-02 15:04:05")
+	_, err = client.Collection(collection).Doc("UpdatedTime").Set(ctx, map[string]interface{}{
+		"Timestamp": updatedDatetime,
+	})
+
+	log.Println("Completed Adding Update Timestamp to cloud.")
 }

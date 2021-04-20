@@ -30,10 +30,10 @@ func AddCloudRankingItem(ctx context.Context, client *firestore.Client, storeDat
 		})
 
 		log.Println("Ranking Item:", data.ItemID, "Added")
-	}
 
-	if err != nil {
-		log.Fatalf("Failed adding Ranking Item type: %v", err)
+		if err != nil {
+			log.Printf("Failed adding Ranking Item type: %v\n", err)
+		}
 	}
 
 	log.Println("Completed Adding Ranking Item to cloud.")
@@ -55,10 +55,10 @@ func AddCloudRankingSOItem(ctx context.Context, client *firestore.Client, storeD
 		})
 
 		log.Println("Ranking SOItem:", data.ItemID, "Added")
-	}
 
-	if err != nil {
-		log.Fatalf("Failed adding Ranking SOItem type: %v", err)
+		if err != nil {
+			log.Printf("Failed adding Ranking SO Item type: %v\n", err)
+		}
 	}
 
 	log.Println("Completed Adding Ranking SOItem to cloud.")
@@ -81,10 +81,10 @@ func AddCloudRankingStockItem(ctx context.Context, client *firestore.Client, sto
 		})
 
 		log.Println("Stock Ranking Item:", data.ItemID, "Added")
-	}
 
-	if err != nil {
-		log.Fatalf("Failed adding Stock Ranking Item type: %v", err)
+		if err != nil {
+			log.Printf("Failed adding Ranking Stock Item type: %v\n", err)
+		}
 	}
 
 	log.Println("Completed Adding Stock Ranking Item to cloud.")

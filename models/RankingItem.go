@@ -11,5 +11,5 @@ type RankingItem struct {
 	LowMargin  float64 `db:"LowMargin"`
 	Qty        int     `db:"Qty"`
 	TotalAmt   float64 `db:"TotalAmt"`
-	ProfitAmt float64 `db:"ProfitAmt"`
+	ProfitAmt  float64 `db:"ProfitAmt"`
 }

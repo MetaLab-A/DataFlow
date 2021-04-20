@@ -40,6 +40,30 @@ func CalInvItem2RankingItem(store map[string]models.InvoiceItem) map[string]*mod
 	return repeatedID
 }
 
+func CalSOItem2RankingItem(store map[string]models.SOItem) map[string]*models.RankingSOItem {
+	repeatedID := make(map[string]*models.RankingSOItem)
+
+	for _, s := range store {
+		tempObj := repeatedID[s.ItemID]
+		fQty, _ := strconv.Atoi(s.Qty)
+		fPrice, _ := strconv.ParseFloat(s.Price, 64)
+
+		// Create new data in map if it found first time
+		if tempObj == nil {
+			tempObj = &models.RankingSOItem{ItemID: s.ItemID, ItemName: s.ItemName}
+		}
+
+		// High - Low decision making
+		tempObj.HighPrice = calNewHigh(fPrice, tempObj.HighPrice)
+		tempObj.LowPrice = calNewLow(fPrice, tempObj.LowPrice)
+
+		tempObj.Qty += fQty
+		repeatedID[s.ItemID] = tempObj
+	}
+
+	return repeatedID
+}
+
 func calNewHigh(incoming float64, record float64) float64 {
 	if record <= 0 || incoming > record {
 		return incoming
@@ -62,6 +86,14 @@ func CalPrintRanking(store map[string]*models.RankingItem) {
 		fmt.Println("Margin(H, L)", v.HighMargin, v.LowMargin)
 		fmt.Println("TotalAmt:", v.TotalAmt)
 		fmt.Println("ProfitAmt:", v.ProfitAmt)
+		fmt.Println("Qty:", v.Qty)
+	}
+}
+
+func CalPrintSORanking(store map[string]*models.RankingSOItem) {
+	for k, v := range store {
+		fmt.Println("=====", k, "SO Item =====")
+		fmt.Println("Price(H, L)", v.HighPrice, v.LowPrice)
 		fmt.Println("Qty:", v.Qty)
 	}
 }

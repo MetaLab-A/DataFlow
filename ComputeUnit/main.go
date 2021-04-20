@@ -34,8 +34,7 @@ var client *firestore.Client
 // func processor(from string, to string, collectionName string) {
 func main() {
 	runStart := time.Now()
-	curDatetime := time.Now().Format("2006-01-02")
-	
+	curDatetime := time.Now().Format("2006-01-02 15:04:05")
 
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
@@ -54,20 +53,34 @@ func main() {
 		fmt.Println(" Error open db:", err.Error())
 	}
 
+	// Patch update
 	// invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", from, to)
 
 	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", "2021-01-01 00:00:00", curDatetime)
+	
+	// SQL SO Items
+	soItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrderItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'SO%%' ORDER BY EditDate DESC;", "2021-01-01 00:00:00", curDatetime)
+
+	// SQL Stock Items
 
 	invItemStore, errInvItem := metaapis.ReadInvoiceItemData(db, invItemSQL)
+	soItemStore, errSOItem := metaapis.ReadSOItemData(db, soItemSQL)
 
 	if errInvItem != nil {
 		log.Fatal("Error reading Ranking Item: ", errInvItem.Error())
+	}	
+	
+	if errSOItem != nil {
+		log.Fatal("Error reading SO Item: ", errSOItem.Error())
 	}
 
 	defer db.Close()
 
 	rankingStore := metaapis.CalInvItem2RankingItem(invItemStore)
 	metaapis.CalPrintRanking(rankingStore)
+
+	soRankingStore := metaapis.CalSOItem2RankingItem(soItemStore)
+	metaapis.CalPrintSORanking(soRankingStore)
 
 	// END MSSQL: Connections
 
@@ -86,6 +99,7 @@ func main() {
 	}
 
 	metaapis.AddCloudRankingItem(ctx, client, rankingStore, "RankingAnnual")
+	metaapis.AddCloudRankingSOItem(ctx, client, soRankingStore, "SORankingAnnual")
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))

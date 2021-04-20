@@ -24,14 +24,18 @@ var err error
 var client *firestore.Client
 
 // START: MAIN
-func main() {
-	curDatetime := time.Now().Format("2006-01-02")
-	processor("2021-01-01 00:00:00", curDatetime, "RankingAnnual")
-}
+// func main() {
+// 	curDatetime := time.Now().Format("2006-01-02")
+// 	processor("2021-01-01 00:00:00", curDatetime, "RankingAnnual")
+// 	time.Sleep(5 * time.Second)
+// }
 // END: MAIN
 
-func processor(from string, to string, collectionName string) {
+// func processor(from string, to string, collectionName string) {
+func main() {
 	runStart := time.Now()
+	curDatetime := time.Now().Format("2006-01-02")
+	
 
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
@@ -50,7 +54,9 @@ func processor(from string, to string, collectionName string) {
 		fmt.Println(" Error open db:", err.Error())
 	}
 
-	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", from, to)
+	// invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", from, to)
+
+	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", "2021-01-01 00:00:00", curDatetime)
 
 	invItemStore, errSoItem := metaapis.ReadInvoiceItemData(db, invItemSQL)
 
@@ -79,7 +85,7 @@ func processor(from string, to string, collectionName string) {
 		log.Fatalln(err)
 	}
 
-	metaapis.AddCloudRankingItem(ctx, client, rankingStore, collectionName)
+	metaapis.AddCloudRankingItem(ctx, client, rankingStore, "RankingAnnual")
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))

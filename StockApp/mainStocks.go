@@ -46,7 +46,6 @@ func main() {
 	}
 
 	// DATE format
-	// datetime = "2021-02-06"
 	datetime := time.Now().Format("2006-01-02")
 	stockSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsItem WHERE EditDate >= '%s 00:00:00' AND GroupID IN ('C', 'C-1', 'E') ORDER BY EditDate DESC;", datetime)
 
@@ -84,6 +83,7 @@ func main() {
 	// END: Stocks part
 
 	fmt.Println("Runtime: ", time.Since(runStart))
+	time.Sleep(2 * time.Second)
 }
 
 // END: MAIN

@@ -187,3 +187,104 @@ func ReadInvoiceItemData(db *sqlx.DB, statementSQL string) (map[string]models.In
 	}
 	return store, nil
 }
+
+
+func ReadVSSummary(db *sqlx.DB) (map[string]models.VSSummary, error) {
+	store := make(map[string]models.VSSummary)
+	ctx := context.Background()
+	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty, SUM(TotalAmt) AS TotalAmt FROM fss.dbo.bsInvoiceItem WHERE AddDate >= '2021-01-01' AND DocNo LIKE 'VS%%' GROUP BY ItemID"
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err0 := db.Queryx(statementSQL)
+
+	if err != nil {
+		return store, err0
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.VSSummary
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.ItemID] = model
+	}
+	return store, nil
+}
+
+
+func ReadItemName(db *sqlx.DB) (map[string]models.ItemName, error) {
+	store := make(map[string]models.ItemName)
+	ctx := context.Background()
+	statementSQL := "SELECT ItemID, ItemName FROM fss.dbo.bsInvoiceItem WHERE AddDate >= '2021-01-01' AND DocNo LIKE 'VS%%'"
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err0 := db.Queryx(statementSQL)
+
+	if err != nil {
+		return store, err0
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.ItemName
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.ItemID] = model
+	}
+	return store, nil
+}
+
+func ReadSOSummary(db *sqlx.DB) (map[string]models.SOSummary, error) {
+	store := make(map[string]models.SOSummary)
+	ctx := context.Background()
+	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty FROM fss.dbo.bsSaleOrderItem WHERE AddDate >= '2021-01-01' AND DocNo LIKE 'SO%' GROUP BY ItemID"
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err0 := db.Queryx(statementSQL)
+
+	if err != nil {
+		return store, err0
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.SOSummary
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.ItemID] = model
+	}
+	return store, nil
+}

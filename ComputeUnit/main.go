@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -12,6 +13,7 @@ import (
 	"google.golang.org/api/option"
 
 	metaapis "DataFlow/metaapis"
+	models "DataFlow/models"
 
 	sqlx "github.com/jmoiron/sqlx"
 )
@@ -24,18 +26,8 @@ var err error
 var client *firestore.Client
 
 // START: MAIN
-// func main() {
-// 	curDatetime := time.Now().Format("2006-01-02")
-// 	processor("2021-01-01 00:00:00", curDatetime, "RankingAnnual")
-// 	time.Sleep(5 * time.Second)
-// }
-// END: MAIN
-
-// func processor(from string, to string, collectionName string) {
 func main() {
 	runStart := time.Now()
-	curDatetime := time.Now().Format("2006-01-02 15:04:05")
-
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
 
@@ -53,44 +45,28 @@ func main() {
 		fmt.Println(" Error open db:", err.Error())
 	}
 
-	// Patch update
-	// invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", from, to)
+	itemNameStore, _ := metaapis.ReadItemName(db)
+	vsStore, _ := metaapis.ReadVSSummary(db)
+	soStore, _ := metaapis.ReadSOSummary(db)
+	mergeStore := make(map[string]*models.QtySummary)
 
-	invItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsInvoiceItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'VS%%' ORDER BY EditDate DESC;", "2021-01-01 00:00:00", curDatetime)
-	
-	// SQL SO Items
-	soItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrderItem WHERE EditDate >= '%s' AND EditDate <= '%s' AND DocNo LIKE 'SO%%' ORDER BY EditDate DESC;", "2021-01-01 00:00:00", curDatetime)
+	for k, v := range vsStore {
+		vsQty, _ := strconv.Atoi(v.Qty)
+		soQty, _ := strconv.Atoi(soStore[k].Qty)
+		totalAmt, _ := strconv.ParseFloat(v.TotalAmt, 64)
 
-	// SQL Stock Items
-	stockSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsItem WHERE EditDate >= '%s'", "2021-01-01 00:00:00")
+		mergeStore[k] = &models.QtySummary{
+			ItemID:   v.ItemID,
+			ItemName: itemNameStore[v.ItemID].ItemName,
+			VSSOQty:  vsQty - soQty,
+			TotalAmt: totalAmt,
+		}
 
-	invItemStore, errInvItem := metaapis.ReadInvoiceItemData(db, invItemSQL)
-	soItemStore, errSOItem := metaapis.ReadSOItemData(db, soItemSQL)
-	stockStore, errStock := metaapis.ReadStockData(db, stockSQL)
-
-	if errInvItem != nil {
-		log.Fatal("Error reading Ranking Item: ", errInvItem.Error())
-	}	
-	
-	if errSOItem != nil {
-		log.Fatal("Error reading SO Item: ", errSOItem.Error())
-	}	
-	
-	if errStock != nil {
-		log.Fatal("Error reading SO Item: ", errStock.Error())
-	}	
+		fmt.Print(mergeStore[k].ItemID, "Qty: ")
+		fmt.Println(mergeStore[k].VSSOQty)
+	}
 
 	defer db.Close()
-
-	rankingStore := metaapis.CalInvItem2RankingItem(invItemStore)
-	metaapis.CalPrintRanking(rankingStore)
-
-	soRankingStore := metaapis.CalSOItem2RankingItem(soItemStore)
-	metaapis.CalPrintSORanking(soRankingStore)
-
-	stockRankingStore := metaapis.CalStockItem2RankingItem(stockStore)
-	metaapis.CalPrintStockRanking(stockRankingStore)
-
 	// END MSSQL: Connections
 
 	// START FIREBASE: fIRESTORE
@@ -107,14 +83,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	metaapis.AddCloudRankingItem(ctx, client, rankingStore, "RankingAnnual")
-	metaapis.AddCloudRankingSOItem(ctx, client, soRankingStore, "SORankingAnnual")
-	metaapis.AddCloudRankingStockItem(ctx, client, stockRankingStore, "StockRankingAnnual")
+	metaapis.AddCloudRankingQty(ctx, client, mergeStore, "RankingAnnual-Qty")
 	metaapis.AddCloudRankingTimeStamp(ctx, client, "RankingUpdateTimeStamp")
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))
-	
+
 	time.Sleep(3 * time.Second)
 }
-
+// END MAIN

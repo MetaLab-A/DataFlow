@@ -65,7 +65,7 @@ func AddCloudRankingSOItem(ctx context.Context, client *firestore.Client, storeD
 	log.Println("Completed Adding Ranking SOItem to cloud.")
 }
 
-func AddCloudRankingStockItem(ctx context.Context, client *firestore.Client, storeData map[string]*models.RankingStock, collection string) {
+func AddCloudRankingQty(ctx context.Context, client *firestore.Client, storeData map[string]*models.QtySummary, collection string) {
 	if len(storeData) == 0 {
 		log.Println("Stock Ranking Item: Up-to-date.")
 		return
@@ -73,22 +73,20 @@ func AddCloudRankingStockItem(ctx context.Context, client *firestore.Client, sto
 
 	for key, data := range storeData {
 		_, err = client.Collection(collection).Doc(key).Set(ctx, map[string]interface{}{
-			"ItemID":     data.ItemID,
-			"ItemName":   data.ItemName,
-			"Price":      data.Price,
-			"Cost":       data.Cost,
-			"Qty":        data.Qty,
-			"StockValue": data.StockValue,
+			"ItemID":   data.ItemID,
+			"ItemName": data.ItemName,
+			"VSSOQty":  data.VSSOQty,
+			"TotalAmt": data.TotalAmt,
 		})
 
-		log.Println("Stock Ranking Item:", data.ItemID, "Added")
+		log.Println("Qty Ranking Item:", data.ItemID, "Added")
 
 		if err != nil {
-			log.Printf("Failed adding Ranking Stock Item type: %v\n", err)
+			log.Printf("Failed adding Qty Stock Item type: %v\n", err)
 		}
 	}
 
-	log.Println("Completed Adding Stock Ranking Item to cloud.")
+	log.Println("Completed Adding Qty Ranking Item to cloud.")
 }
 
 func AddCloudRankingTimeStamp(ctx context.Context, client *firestore.Client, collection string) {

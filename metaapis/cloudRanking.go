@@ -76,6 +76,12 @@ func AddCloudRankingQty(ctx context.Context, client *firestore.Client, storeData
 			"ItemID":   data.ItemID,
 			"ItemName": data.ItemName,
 			"VSSOQty":  data.VSSOQty,
+			"RRPOQty":  data.RRPOQty,
+			"VSQty":  data.SOQty,
+			"SOQty":  data.SOQty,
+			"RRQty":  data.RRQty,
+			"POQty":  data.POQty,
+			"StockQty": data.StockQty,
 			"TotalAmt": data.TotalAmt,
 		})
 

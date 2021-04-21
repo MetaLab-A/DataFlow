@@ -288,3 +288,102 @@ func ReadSOSummary(db *sqlx.DB) (map[string]models.SOSummary, error) {
 	}
 	return store, nil
 }
+
+func ReadStockSummary(db *sqlx.DB) (map[string]models.Stock, error) {
+	store := make(map[string]models.Stock)
+	ctx := context.Background()
+	statementSQL := "SELECT ID, StockQty FROM fss.dbo.bsItem WHERE EditDate >= '2021-01-01'"
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err := db.Queryx(statementSQL)
+
+	if err != nil {
+		return store, err
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.Stock
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.ID] = model
+	}
+	return store, nil
+}
+
+func ReadPOSummary(db *sqlx.DB) (map[string]models.POItem, error) {
+	store := make(map[string]models.POItem)
+	ctx := context.Background()
+	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty FROM fss.dbo.bsPRItem where DocNo like 'PO%' and EditDate >= '2021-01-01' GROUP BY ItemID"
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err := db.Queryx(statementSQL)
+
+	if err != nil {
+		return store, err
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.POItem
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.ItemID] = model
+	}
+	return store, nil
+}
+
+func ReadRRSummary(db *sqlx.DB) (map[string]models.POItem, error) {
+	store := make(map[string]models.POItem)
+	ctx := context.Background()
+	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty FROM fss.dbo.bsPOItem where DocNo like 'RR%' and EditDate >= '2021-01-01' GROUP BY ItemID"
+
+	// CHECK IF DATABASE IS ALIVE.
+	err := db.PingContext(ctx)
+	if err != nil {
+		return store, err
+	}
+	// EXECUTE QUERY
+	rows, err := db.Queryx(statementSQL)
+
+	if err != nil {
+		return store, err
+	}
+	// CLOSE CONNECTION
+	defer rows.Close()
+
+	// ITERATE THROUGH THE RESULT SET.
+	for rows.Next() {
+		// GET VALUES FROM ROW.
+		var model models.POItem
+		err := rows.StructScan(&model)
+
+		if err != nil {
+			return store, err
+		}
+		store[model.ItemID] = model
+	}
+	return store, nil
+}

@@ -48,22 +48,31 @@ func main() {
 	itemNameStore, _ := metaapis.ReadItemName(db)
 	vsStore, _ := metaapis.ReadVSSummary(db)
 	soStore, _ := metaapis.ReadSOSummary(db)
+	stockStore, _ := metaapis.ReadStockSummary(db)
+	poStore, _ := metaapis.ReadPOSummary(db)
+	rrStore, _ := metaapis.ReadRRSummary(db)
 	mergeStore := make(map[string]*models.QtySummary)
 
 	for k, v := range vsStore {
 		vsQty, _ := strconv.Atoi(v.Qty)
 		soQty, _ := strconv.Atoi(soStore[k].Qty)
+		poQty, _ := strconv.Atoi(poStore[k].Qty)
+		rrQty, _ := strconv.Atoi(rrStore[k].Qty)
+		stockQty, _ := strconv.Atoi(stockStore[k].StockQty)
 		totalAmt, _ := strconv.ParseFloat(v.TotalAmt, 64)
 
 		mergeStore[k] = &models.QtySummary{
 			ItemID:   v.ItemID,
 			ItemName: itemNameStore[v.ItemID].ItemName,
 			VSSOQty:  vsQty - soQty,
+			RRPOQty:  rrQty - poQty,
+			VSQty:    vsQty,
+			SOQty:    soQty,
+			RRQty:    rrQty,
+			POQty:    poQty,
+			StockQty: stockQty,
 			TotalAmt: totalAmt,
 		}
-
-		fmt.Print(mergeStore[k].ItemID, "Qty: ")
-		fmt.Println(mergeStore[k].VSSOQty)
 	}
 
 	defer db.Close()
@@ -91,4 +100,5 @@ func main() {
 
 	time.Sleep(3 * time.Second)
 }
+
 // END MAIN

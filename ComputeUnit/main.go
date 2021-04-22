@@ -60,12 +60,17 @@ func main() {
 		rrQty, _ := strconv.Atoi(rrStore[k].Qty)
 		stockQty, _ := strconv.Atoi(stockStore[k].StockQty)
 		totalAmt, _ := strconv.ParseFloat(v.TotalAmt, 64)
+		VSSOQty := soQty - vsQty
+		RRPOQty := poQty - rrQty
+		if RRPOQty < 0 {
+			RRPOQty = 0
+		}
 
 		mergeStore[k] = &models.QtySummary{
 			ItemID:   v.ItemID,
 			ItemName: itemNameStore[v.ItemID].ItemName,
-			VSSOQty:  vsQty - soQty,
-			RRPOQty:  poQty - rrQty,
+			VSSOQty:  VSSOQty,
+			RRPOQty:  RRPOQty,
 			VSQty:    vsQty,
 			SOQty:    soQty,
 			RRQty:    rrQty,

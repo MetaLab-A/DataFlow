@@ -292,7 +292,7 @@ func ReadSOSummary(db *sqlx.DB) (map[string]models.SOSummary, error) {
 func ReadStockSummary(db *sqlx.DB) (map[string]models.Stock, error) {
 	store := make(map[string]models.Stock)
 	ctx := context.Background()
-	statementSQL := "SELECT ID, StockQty FROM fss.dbo.bsItem WHERE EditDate >= '2021-01-01'"
+	statementSQL := "SELECT ID, StockQty FROM fss.dbo.bsItem WHERE AddDate >= '2021-01-01'"
 
 	// CHECK IF DATABASE IS ALIVE.
 	err := db.PingContext(ctx)
@@ -325,7 +325,7 @@ func ReadStockSummary(db *sqlx.DB) (map[string]models.Stock, error) {
 func ReadPOSummary(db *sqlx.DB) (map[string]models.POItem, error) {
 	store := make(map[string]models.POItem)
 	ctx := context.Background()
-	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty FROM fss.dbo.bsPRItem where DocNo like 'PO%' and EditDate >= '2021-01-01' GROUP BY ItemID"
+	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty FROM fss.dbo.bsPRItem where DocNo like 'PO%' and AddDate >= '2021-01-01' GROUP BY ItemID"
 
 	// CHECK IF DATABASE IS ALIVE.
 	err := db.PingContext(ctx)
@@ -358,7 +358,7 @@ func ReadPOSummary(db *sqlx.DB) (map[string]models.POItem, error) {
 func ReadRRSummary(db *sqlx.DB) (map[string]models.POItem, error) {
 	store := make(map[string]models.POItem)
 	ctx := context.Background()
-	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty FROM fss.dbo.bsPOItem where DocNo like 'RR%' and EditDate >= '2021-01-01' GROUP BY ItemID"
+	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty FROM fss.dbo.bsPOItem where DocNo like 'RR%' and AddDate >= '2021-01-01' GROUP BY ItemID"
 
 	// CHECK IF DATABASE IS ALIVE.
 	err := db.PingContext(ctx)

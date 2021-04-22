@@ -65,7 +65,7 @@ func main() {
 			ItemID:   v.ItemID,
 			ItemName: itemNameStore[v.ItemID].ItemName,
 			VSSOQty:  vsQty - soQty,
-			RRPOQty:  rrQty - poQty,
+			RRPOQty:  poQty - rrQty,
 			VSQty:    vsQty,
 			SOQty:    soQty,
 			RRQty:    rrQty,

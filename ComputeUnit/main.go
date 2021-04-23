@@ -35,7 +35,6 @@ func main() {
 	if curTime < "08:00:00" || curTime > "19:00:00" {
 		os.Exit(0)
 	}
-	// os.Exit(0)
 
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
@@ -68,7 +67,6 @@ func main() {
 		poQty, _ := strconv.Atoi(poStore[k].Qty)
 		rrQty, _ := strconv.Atoi(rrStore[k].Qty)
 		stockQty, _ := strconv.Atoi(stockStore[k].StockQty)
-		// stockQty = stockQty + rrQty - vsQty
 		totalAmt, _ := strconv.ParseFloat(v.TotalAmt, 64)
 		VSSOQty, _ := strconv.Atoi(soStore[k].RQty)
 		RRPOQty, _ := strconv.Atoi(poStore[k].RQty)

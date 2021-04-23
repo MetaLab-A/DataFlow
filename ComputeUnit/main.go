@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -28,6 +29,14 @@ var client *firestore.Client
 // START: MAIN
 func main() {
 	runStart := time.Now()
+	curTime := time.Now().Format("15:04:05")
+	curTime = "09:00:00"
+
+	if curTime < "08:00:00" || curTime > "19:00:00" {
+		os.Exit(0)
+	}
+	// os.Exit(0)
+
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
 
@@ -59,11 +68,13 @@ func main() {
 		poQty, _ := strconv.Atoi(poStore[k].Qty)
 		rrQty, _ := strconv.Atoi(rrStore[k].Qty)
 		stockQty, _ := strconv.Atoi(stockStore[k].StockQty)
+		// stockQty = stockQty + rrQty - vsQty
 		totalAmt, _ := strconv.ParseFloat(v.TotalAmt, 64)
-		VSSOQty := soQty - vsQty
-		RRPOQty := poQty - rrQty
-		if RRPOQty < 0 {
-			RRPOQty = 0
+		VSSOQty, _ := strconv.Atoi(soStore[k].RQty)
+		RRPOQty, _ := strconv.Atoi(poStore[k].RQty)
+
+		if curTime > "09:00:00" && curTime < "18:00:00" {
+			stockQty += rrQty - vsQty
 		}
 
 		mergeStore[k] = &models.QtySummary{

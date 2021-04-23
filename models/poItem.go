@@ -12,6 +12,7 @@ type POItem struct {
 	StockID      string         `db:"StockID"`
 	Price        string         `db:"Price"`
 	Qty          string         `db:"Qty"`
+	RQty         string         `db:"RQty"`
 	DiscountText string         `db:"DiscountText"`
 	DiscountAmt  string         `db:"DiscountAmt"`
 	TotalAmt     string         `db:"TotalAmt"`

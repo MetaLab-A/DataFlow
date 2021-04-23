@@ -30,7 +30,6 @@ var client *firestore.Client
 func main() {
 	runStart := time.Now()
 	curTime := time.Now().Format("15:04:05")
-	curTime = "09:00:00"
 
 	if curTime < "08:00:00" || curTime > "19:00:00" {
 		os.Exit(0)

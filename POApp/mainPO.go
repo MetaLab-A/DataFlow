@@ -41,8 +41,7 @@ func main() {
 	log.Println("Database Connected")
 
 	// DATE format
-	datetime := time.Now().Format("2006-01-02")	
-	// datetime = "2021-01-10"
+	datetime := time.Now().Format("2006-01-02")
 	poSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPO WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 	poItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsPOItem WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
@@ -84,6 +83,7 @@ func main() {
 	// END FIREBASE: fIRESTORE
 
 	fmt.Println("Runtime: ", time.Since(runStart))
+	time.Sleep(2 * time.Second)
 }
 
 // END: MAIN

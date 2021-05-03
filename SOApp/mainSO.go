@@ -48,7 +48,7 @@ func main() {
 
 	// DATE format
 	datetime := time.Now().Format("2006-01-02")
-	// DEBUG: datetime = "2021-01-01"
+	// DEBUG: datetime = "2021-04-20"
 	soSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrder WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 	soItemSQL := fmt.Sprintf("SELECT * FROM fss.dbo.bsSaleOrderItem WHERE EditDate >= '%s 00:00:00' ORDER BY EditDate DESC;", datetime)
 
@@ -91,6 +91,7 @@ func main() {
 	metaapis.AddCloudSOItem(ctx, client, soItemStore)
 
 	fmt.Println("Runtime: ", time.Since(runStart))
+	time.Sleep(2 * time.Second)
 }
 
 // END: MAIN

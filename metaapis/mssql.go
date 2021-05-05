@@ -192,7 +192,7 @@ func ReadInvoiceItemData(db *sqlx.DB, statementSQL string) (map[string]models.In
 func ReadVSSummary(db *sqlx.DB) (map[string]models.VSSummary, error) {
 	store := make(map[string]models.VSSummary)
 	ctx := context.Background()
-	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty, SUM(TotalAmt) AS TotalAmt FROM fss.dbo.bsInvoiceItem WHERE AddDate >= '2021-01-01' AND DocNo LIKE 'VS%%' GROUP BY ItemID"
+	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty, SUM(TotalAmt) AS TotalAmt FROM fss.dbo.bsInvoiceItem WHERE AddDate >= CAST(GETDATE() as date)AND AddDate < CAST(GETDATE()+1 as date) AND DocNo LIKE 'VS%%' GROUP BY ItemID"
 
 	// CHECK IF DATABASE IS ALIVE.
 	err := db.PingContext(ctx)

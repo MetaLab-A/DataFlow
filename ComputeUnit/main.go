@@ -59,23 +59,23 @@ func main() {
 	rrStore, _ := metaapis.ReadRRSummary(db)
 	mergeStore := make(map[string]*models.QtySummary)
 
-	for k, v := range vsStore {
-		vsQty, _ := strconv.Atoi(v.Qty)
+	for k, v := range stockStore {
+		vsQty, _ := strconv.Atoi(vsStore[k].Qty)
 		soQty, _ := strconv.Atoi(soStore[k].Qty)
 		poQty, _ := strconv.Atoi(poStore[k].Qty)
 		rrQty, _ := strconv.Atoi(rrStore[k].Qty)
-		totalAmt, _ := strconv.ParseFloat(v.TotalAmt, 64)
+		totalAmt, _ := strconv.ParseFloat(vsStore[k].TotalAmt, 64)
 		VSSOQty, _ := strconv.Atoi(soStore[k].RQty)
 		RRPOQty, _ := strconv.Atoi(poStore[k].RQty)
-		stockQty, _ := strconv.Atoi(stockStore[k].StockQty)
+		stockQty, _ := strconv.Atoi(v.StockQty)
 
 		if curTime > "09:00:00" && curTime < "18:00:00" {
 			stockQty = -1
 		}
 
 		mergeStore[k] = &models.QtySummary{
-			ItemID:   v.ItemID,
-			ItemName: itemNameStore[v.ItemID].ItemName,
+			ItemID:   v.ID,
+			ItemName: itemNameStore[v.ID].ItemName,
 			VSSOQty:  VSSOQty,
 			RRPOQty:  RRPOQty,
 			VSQty:    vsQty,

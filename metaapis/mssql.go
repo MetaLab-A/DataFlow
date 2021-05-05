@@ -360,7 +360,7 @@ func ReadPOSummary(db *sqlx.DB) (map[string]models.POItem, error) {
 func ReadRRSummary(db *sqlx.DB) (map[string]models.POItem, error) {
 	store := make(map[string]models.POItem)
 	ctx := context.Background()
-	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty FROM fss.dbo.bsPOItem where DocNo like 'RR%' and AddDate >= '2021-01-01' GROUP BY ItemID"
+	statementSQL := "SELECT ItemID, SUM(Qty) AS Qty FROM fss.dbo.bsPOItem where DocNo like 'RR%' and AddDate >= CAST(GETDATE() as date) and AddDate < CAST(GETDATE()+1 as date) GROUP BY ItemID"
 
 	// CHECK IF DATABASE IS ALIVE.
 	err := db.PingContext(ctx)

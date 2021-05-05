@@ -72,18 +72,36 @@ func AddCloudRankingQty(ctx context.Context, client *firestore.Client, storeData
 	}
 
 	for key, data := range storeData {
-		_, err = client.Collection(collection).Doc(key).Set(ctx, map[string]interface{}{
-			"ItemID":   data.ItemID,
-			"ItemName": data.ItemName,
-			"VSSOQty":  data.VSSOQty,
-			"RRPOQty":  data.RRPOQty,
-			"VSQty":  data.VSQty,
-			"SOQty":  data.SOQty,
-			"RRQty":  data.RRQty,
-			"POQty":  data.POQty,
-			"StockQty": data.StockQty,
-			"TotalAmt": data.TotalAmt,
-		})
+		newDoc := map[string]interface{}{}
+
+		if data.StockQty < 0 {
+			newDoc = map[string]interface{}{
+				"ItemID":   data.ItemID,
+				"ItemName": data.ItemName,
+				"VSSOQty":  data.VSSOQty,
+				"RRPOQty":  data.RRPOQty,
+				"VSQty":  data.VSQty,
+				"SOQty":  data.SOQty,
+				"RRQty":  data.RRQty,
+				"POQty":  data.POQty,
+				"TotalAmt": data.TotalAmt,
+			}
+		} else {
+			newDoc = map[string]interface{}{
+				"ItemID":   data.ItemID,
+				"ItemName": data.ItemName,
+				"VSSOQty":  data.VSSOQty,
+				"RRPOQty":  data.RRPOQty,
+				"VSQty":  data.VSQty,
+				"SOQty":  data.SOQty,
+				"RRQty":  data.RRQty,
+				"POQty":  data.POQty,
+				"TotalAmt": data.TotalAmt,
+				"StockQty": data.StockQty,
+			}
+		}
+
+		_, err = client.Collection(collection).Doc(key).Set(ctx, newDoc)
 
 		log.Println("Qty Ranking Item:", data.ItemID, "Added")
 

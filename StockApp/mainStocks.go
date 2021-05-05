@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -12,6 +13,7 @@ import (
 	"google.golang.org/api/option"
 
 	metaapis "DataFlow/metaapis"
+
 	sqlx "github.com/jmoiron/sqlx"
 )
 
@@ -25,8 +27,12 @@ var client *firestore.Client
 // START: MAIN
 func main() {
 	runStart := time.Now()
-	
+
 	// curTime = runStart.Format("15:04")
+	curTime := time.Now().Format("15:04:05")
+	if curTime < "08:00:00" || curTime > "19:00:00" {
+		os.Exit(0)
+	}
 
 	// START MSSQL: Connections
 	connString := fmt.Sprintf("server=%s;sa port=%d;database=%s;encrypt=disable", server, port, database)
@@ -40,7 +46,7 @@ func main() {
 	}
 
 	log.Println("Database Connected")
-	
+
 	if err != nil {
 		fmt.Println(" Error open db:", err.Error())
 	}
